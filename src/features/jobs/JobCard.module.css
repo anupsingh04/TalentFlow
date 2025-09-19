@@ -1,0 +1,19 @@
+/* src/features/jobs/JobCard.module.css */
+.card {
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin: 8px 0;
+  border-radius: 8px;
+}
+
+.tags {
+  margin-top: 8px;
+}
+
+.tag {
+  background: #eee;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 4px;
+  font-size: 12px;
+}
