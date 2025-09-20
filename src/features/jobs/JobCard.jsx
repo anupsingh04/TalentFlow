@@ -2,10 +2,19 @@
 import PropTypes from "prop-types";
 import styles from "./JobCard.module.css";
 
-function JobCard({ job }) {
+function JobCard({ job, onEdit }) {
   return (
     <div className={styles.card}>
-      <h3>{job.title}</h3>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h3>{job.title}</h3>
+        <button onClick={onEdit}>Edit</button> {/* Add Edit button */}
+      </div>
       <p>Status: {job.status}</p>
       <div className={styles.tags}>
         {job.tags.map((tag) => (
@@ -26,6 +35,7 @@ JobCard.propTypes = {
     status: PropTypes.string.isRequired,
     tags: PropTypes.arrayOf(PropTypes.string).isRequired,
   }).isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
 
 export default JobCard;

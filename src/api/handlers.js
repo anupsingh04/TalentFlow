@@ -39,4 +39,32 @@ export const handlers = [
     console.log("GET /jobs: ", allJobs);
     return HttpResponse.json(allJobs);
   }),
+
+  //Handles POST /jobs request (Create job)
+  http.post("/jobs", async ({ request }) => {
+    const newJobData = await request.json();
+
+    // Ensure a default status is set
+    const newJob = {
+      status: "active", // Default status
+      ...newJobData,
+      //Simple slug generation
+      slug: newJobData.title.toLowerCase().replace(/\s+/g, "-"),
+    };
+
+    //Add to database
+    const id = await db.jobs.add(newJob);
+    return HttpResponse.json({ ...newJob, id }, { status: 201 });
+  }),
+
+  //Handles PATCH /jobs/:id request (Update job)
+  http.patch("/jobs/:id", async ({ request, params }) => {
+    const { id } = params;
+    const updates = await request.json();
+
+    //update in the database
+    await db.jobs.update(Number(id), updates);
+
+    return HttpResponse.json(updates);
+  }),
 ];
