@@ -11,7 +11,6 @@ const schema = yup
   .shape({
     title: yup.string().required("Title is required"),
     tags: yup.string().required("Tags are required (comma-separated)"),
-    status: yup.string().oneOf(["active", "archived"]).required(),
   })
   .required();
 
@@ -52,7 +51,7 @@ function JobForm({ onSuccess, jobToEdit }) {
         tags: jobToEdit.tags.join(", "), // Convert array to string for input
       });
     } else {
-      reset({ title: "", tags: "", status: "active" }); // Clear form for creation
+      reset({ title: "", tags: "" }); // Clear form for creation
     }
   }, [jobToEdit, reset]);
 
@@ -88,14 +87,7 @@ function JobForm({ onSuccess, jobToEdit }) {
         <input {...register("tags")} />
         <p style={{ color: "red" }}>{errors.tags?.message}</p>
       </div>
-      <div>
-        <label>Status</label>
-        <select {...register("status")}>
-          <option value="active">Active</option>
-          <option value="archived">Archived</option>
-        </select>
-        <p style={{ color: "red" }}>{errors.status?.message}</p>
-      </div>
+
       <button type="submit" disabled={isPending}>
         {isPending ? "Saving..." : jobToEdit ? "Edit Job" : "Save Job"}
       </button>

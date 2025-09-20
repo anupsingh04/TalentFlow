@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import JobCard from "./JobCard";
 import { useSearchParams } from "react-router-dom";
 import { useState } from "react"; //1. Import useState
@@ -24,6 +24,7 @@ const fetchJobs = async ({ queryKey }) => {
 
 function JobsList() {
   const [searchParams, setSearchParams] = useSearchParams(); //3. Get the search params from the URL
+  const queryClient = useQueryClient(); //make sure we have queryClient
 
   const status = searchParams.get("status") || "all";
   const search = searchParams.get("search") || "";
@@ -32,6 +33,25 @@ function JobsList() {
   //4. Add state fot the modal and the job being edited
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jobToEdit, setJobToEdit] = useState(null);
+
+  // Add the new mutation for toggling status
+  const toggleJobStatusMutation = useMutation({
+    mutationFn: async (job) => {
+      const newStatus = job.status === "active" ? "archived" : "active";
+      const response = await fetch(`/jobs/${job.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update job status");
+      }
+    },
+    onSuccess: () => {
+      //Refetch the jobs list to see the change
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+  });
 
   //5. Add handlers to open close the modal
   const handleOpenCreateModal = () => {
@@ -148,12 +168,14 @@ function JobsList() {
 
       <div>
         {data.map((job) => {
-          // 7. pass the edit handler to each JobCard
+          //pass the edit handler to each JobCard and
+          //pass the mutation trigger to the onToggleStatus prop
           return (
             <JobCard
               key={job.id}
               job={job}
               onEdit={() => handleOpenEditModal(job)}
+              onToggleStatus={() => toggleJobStatusMutation.mutate(job)}
             />
           );
         })}

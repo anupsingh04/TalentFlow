@@ -2,7 +2,8 @@
 import PropTypes from "prop-types";
 import styles from "./JobCard.module.css";
 
-function JobCard({ job, onEdit }) {
+//1. Add 'onToggleStatus' as props
+function JobCard({ job, onEdit, onToggleStatus }) {
   return (
     <div className={styles.card}>
       <div
@@ -13,7 +14,13 @@ function JobCard({ job, onEdit }) {
         }}
       >
         <h3>{job.title}</h3>
-        <button onClick={onEdit}>Edit</button> {/* Add Edit button */}
+        <div>
+          {/* 2. Add the new button */}
+          <button onClick={onToggleStatus} style={{ marginRight: "10px" }}>
+            {job.status === "active" ? "Archive" : "Unarchive"}
+          </button>
+          <button onClick={onEdit}>Edit</button> {/* Add Edit button */}
+        </div>
       </div>
       <p>Status: {job.status}</p>
       <div className={styles.tags}>
@@ -36,6 +43,7 @@ JobCard.propTypes = {
     tags: PropTypes.arrayOf(PropTypes.string).isRequired,
   }).isRequired,
   onEdit: PropTypes.func.isRequired,
+  onToggleStatus: PropTypes.func.isRequired, // 3. Add the new prop type
 };
 
 export default JobCard;
