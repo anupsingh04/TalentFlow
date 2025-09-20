@@ -8,3 +8,13 @@ db.version(1).stores({
   candidates: "++id, email",
   assessments: "++id, jobId",
 });
+
+// Version 2 Schema - Add this block
+db.version(2).stores({
+  jobs: "++id, slug, order, status", // Add status as an index
+});
+
+// Version 3 Schema - Add this block
+db.version(3).stores({
+  jobs: "++id, slug, order, status, *tags", // Add *tags as a multi-entry index
+});
