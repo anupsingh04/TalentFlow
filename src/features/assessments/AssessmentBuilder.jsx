@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAssessmentStore } from "../../stores/assessmentStore";
+import QuestionEditor from "./QuestionEditor";
 
 // Fetch function
 const fetchAssessment = async (jobId) => {
@@ -10,13 +11,24 @@ const fetchAssessment = async (jobId) => {
   if (!response.ok) throw new Error("Failed to fetch assessment");
   return response.json();
 };
+const QUESTION_TYPES = [
+  "single-choice",
+  "multi-choice",
+  "short text",
+  "long text",
+];
 
 function AssessmentBuilder() {
   const { jobId } = useParams();
 
   // 1. Get state and actions from the Zustand store
-  const { sections, setInitialState, addSection, updateSectionTitle } =
-    useAssessmentStore();
+  const {
+    sections,
+    setInitialState,
+    addSection,
+    updateSectionTitle,
+    addQuestion,
+  } = useAssessmentStore();
 
   // 2. Fetch the initial assessment data from the API
   const { data: initialAssessment, isLoading } = useQuery({
@@ -37,9 +49,9 @@ function AssessmentBuilder() {
     <div>
       <h2>Assessment Builder for Job #{jobId}</h2>
 
-      {sections.map((section, index) => (
+      {sections.map((section) => (
         <div
-          key={section.id || index}
+          key={section.id}
           style={{
             border: "1px solid #ccc",
             padding: "16px",
@@ -57,12 +69,33 @@ function AssessmentBuilder() {
               marginBottom: "10px",
             }}
           />
-          {/* We will render questions here later */}
+
+          {/* 3. Render questions for this section */}
+          {section.questions.map((question) => (
+            <QuestionEditor
+              key={question.id}
+              sectionId={section.id}
+              question={question}
+            />
+          ))}
+
+          {/* 4. Add controls to add new questions */}
+          <div style={{ marginTop: "20px" }}>
+            <span>Add Question:</span>
+            {QUESTION_TYPES.map((type) => (
+              <button
+                key={type}
+                onClick={() => addQuestion(section.id, type)}
+                style={{ marginLeft: "10px" }}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
         </div>
       ))}
 
       <button onClick={addSection}>Add Section</button>
-      {/* We will add a save button later */}
     </div>
   );
 }
