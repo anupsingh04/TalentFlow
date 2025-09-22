@@ -37,3 +37,9 @@
   color: #555;
   margin: 0;
 }
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block; /* Makes the entire card area clickable */
+}

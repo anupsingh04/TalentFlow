@@ -11,6 +11,7 @@ function arrayMove(arr, fromIndex, toIndex) {
 export const handlers = [
   //Add API handlers here
 
+  // <----- JOB HANDLERS START  ----->
   //Handles a GET /jobs request
   http.get("/jobs", async ({ request }) => {
     const url = new URL(request.url);
@@ -156,7 +157,9 @@ export const handlers = [
       );
     }
   }),
+  // <----- JOB HANDLERS END  ----->
 
+  // <----- CANDIDATE HANDLERS START  ----->
   // Handles GET /candidates request
   http.get("/candidates", async ({ request }) => {
     const url = new URL(request.url);
@@ -184,4 +187,42 @@ export const handlers = [
 
     return HttpResponse.json(candidates);
   }),
+
+  // Handles GET /candidates/:id (Fetch single candidate)
+  http.get("/candidates/:id", async ({ params }) => {
+    const { id } = params;
+    const candidate = await db.candidates.get(Number(id));
+
+    if (candidate) {
+      return HttpResponse.json(candidate);
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Handles GET /candidates/:id/timeline (Fetch candidate activity)
+  http.get("/candidates/:id/timeline", async ({ params }) => {
+    // In a real app, this data would come from the database.
+    // Here, we'll just mock a static timeline for demonstration.
+    const timelineEvents = [
+      {
+        id: 1,
+        date: "2025-09-18",
+        event: "Applied for Senior Frontend Developer.",
+      },
+      { id: 2, date: "2025-09-19", event: "Moved to Screen stage by HR." },
+      {
+        id: 3,
+        date: "2025-09-21",
+        event: "Note added: 'Strong portfolio with React projects.'",
+      },
+      { id: 4, date: "2025-09-22", event: "Moved to Tech stage." },
+    ];
+
+    // Simulate a short delay
+    await new Promise((res) => setTimeout(res, 300));
+
+    return HttpResponse.json(timelineEvents);
+  }),
+
+  // <----- CANDIDATE HANDLERS END  ----->
 ];
