@@ -23,3 +23,10 @@ db.version(3).stores({
 db.version(4).stores({
   jobs: "++id, slug, order, status, *tags, description", // Add description field
 });
+
+// Version 5 Schema - Adds the 'stage' index to candidates
+db.version(5).stores({
+  jobs: "++id, slug, order, status, *tags, description", // Schema carried over
+  candidates: "++id, email, stage", // Schema updated with new index
+  assessments: "++id, jobId", // Schema carried over
+});

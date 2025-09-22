@@ -156,4 +156,32 @@ export const handlers = [
       );
     }
   }),
+
+  // Handles GET /candidates request
+  http.get("/candidates", async ({ request }) => {
+    const url = new URL(request.url);
+    const stage = url.searchParams.get("stage");
+    const search = url.searchParams.get("search");
+
+    let candidatesCollection = db.candidates;
+
+    // Use the index for efficient filtering by stage
+    if (stage && stage !== "all") {
+      candidatesCollection = candidatesCollection.where("stage").equals(stage);
+    }
+
+    let candidates = await candidatesCollection.toArray();
+
+    // The spec calls for client-side search, but we can support a basic server search too
+    if (search) {
+      const searchTerm = search.toLowerCase();
+      candidates = candidates.filter(
+        (c) =>
+          c.name.toLowerCase().includes(searchTerm) ||
+          c.email.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return HttpResponse.json(candidates);
+  }),
 ];

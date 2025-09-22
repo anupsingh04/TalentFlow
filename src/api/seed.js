@@ -1,16 +1,68 @@
 // src/api/seed.js
 import { db } from "./db";
 
+// Helper arrays for random data generation
+const FIRST_NAMES = [
+  "John",
+  "Aisha",
+  "Ben",
+  "Chloe",
+  "David",
+  "Eva",
+  "Frank",
+  "Grace",
+  "Henry",
+  "Isla",
+  "Jack",
+];
+const LAST_NAMES = [
+  "Doe",
+  "Khan",
+  "Smith",
+  "Li",
+  "Jones",
+  "Chen",
+  "Williams",
+  "Garcia",
+  "Miller",
+  "Davis",
+  "Rodriguez",
+];
+const STAGES = ["applied", "screen", "tech", "offer", "hired", "rejected"];
+
 export async function seedInitialData() {
   try {
     const jobCount = await db.jobs.count();
-    if (jobCount > 0) {
+    if (jobCount === 0) {
+      // Expanded list of 25 jobs with descriptions
+      await db.jobs.bulkAdd(jobSeedData);
+      console.log("Database seeded with 25 initial jobs.");
+    }
+
+    // --- Seed Candidates (new code) ---
+    const candidateCount = await db.candidates.count();
+    if (candidateCount > 0) {
       return; // Database already seeded
     }
-    // Expanded list of 25 jobs with descriptions
-    await db.jobs.bulkAdd(jobSeedData);
 
-    console.log("Database seeded with 25 initial jobs.");
+    console.log("Seeding 1,000 candidates...");
+    const candidates = [];
+    for (let i = 0; i < 1000; i++) {
+      const firstName =
+        FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+      const lastName =
+        LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+      candidates.push({
+        name: `${firstName} ${lastName} #${i + 1}`,
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${
+          i + 1
+        }@example.com`,
+        stage: STAGES[Math.floor(Math.random() * STAGES.length)],
+      });
+    }
+
+    await db.candidates.bulkAdd(candidates);
+    console.log("Database seeded with 1,000 initial candidates.");
   } catch (error) {
     console.error("Error seeding database:", error);
   }
