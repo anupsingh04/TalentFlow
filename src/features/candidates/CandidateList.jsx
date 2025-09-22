@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import CandidateCard from "./CandidateCard";
 import styles from "./CandidateCard.module.css";
+import { Link } from "react-router-dom";
 
 // Data fetching function for candidates
 const fetchCandidates = async ({ queryKey }) => {
@@ -75,7 +76,26 @@ function CandidateList() {
 
   return (
     <div>
-      <h2>Candidates</h2>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h2>Candidates</h2>
+        <Link
+          to="/kanban"
+          style={
+            {
+              /* ... some styling ... */
+            }
+          }
+        >
+          View Kanban Board
+        </Link>
+      </div>
+
       {/* Filter and Search UI */}
       <div
         style={{

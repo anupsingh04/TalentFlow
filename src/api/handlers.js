@@ -224,5 +224,29 @@ export const handlers = [
     return HttpResponse.json(timelineEvents);
   }),
 
+  // Handles PATCH /candidates/:id (for updating stage)
+  http.patch("/candidates/:id", async ({ request, params }) => {
+    const { id } = params;
+    const { stage } = await request.json(); // Expecting { stage: "new-stage" }
+
+    if (!stage) {
+      return new HttpResponse(
+        JSON.stringify({ message: "Stage is required" }),
+        { status: 400 }
+      );
+    }
+
+    try {
+      await db.candidates.update(Number(id), { stage });
+      const updatedCandidate = await db.candidates.get(Number(id));
+      return HttpResponse.json(updatedCandidate);
+    } catch (error) {
+      return new HttpResponse(
+        JSON.stringify({ message: "Failed to update candidate" }),
+        { status: 500 }
+      );
+    }
+  }),
+
   // <----- CANDIDATE HANDLERS END  ----->
 ];

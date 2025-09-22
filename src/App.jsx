@@ -4,6 +4,7 @@ import JobsList from "./features/jobs/JobList";
 import JobDetailPage from "./features/jobs/JobDetailPage";
 import CandidateList from "./features/candidates/CandidateList";
 import CandidateProfilePage from "./features/candidates/CandidateProfilePage";
+import KanbanBoard from "./features/candidates/KanbanBoard";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           path="/candidates/:candidateId"
           element={<CandidateProfilePage />}
         />
+        <Route path="/kanban" element={<KanbanBoard />} />
       </Routes>
     </div>
   );
