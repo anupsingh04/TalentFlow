@@ -34,9 +34,11 @@ export const handlers = [
       jobsCollection = jobsCollection.where("tags").equals(tag);
     }
 
-    // THE FIX: Sort the collection by the 'order' property here.
-    // This ensures the data is always sent to the client in the correct order.
-    let filteredJobs = await jobsCollection.orderBy("order").toArray();
+    // 1. Fetch the filtered data from Dexie WITHOUT sorting it yet.
+    let filteredJobs = await jobsCollection.toArray();
+
+    // 2. NOW, sort the resulting array in JavaScript by the 'order' property.
+    filteredJobs.sort((a, b) => a.order - b.order);
 
     //Apply search filter if it exists
     if (search) {

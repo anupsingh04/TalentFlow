@@ -14,17 +14,10 @@ function JobCard({ job, onEdit, onToggleStatus }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    cursor: "grab", // Add a grab cursor to indicate it's draggable
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={styles.card}
-    >
+    <div ref={setNodeRef} style={style} {...attributes} className={styles.card}>
       <div
         style={{
           display: "flex",
@@ -32,13 +25,19 @@ function JobCard({ job, onEdit, onToggleStatus }) {
           alignItems: "center",
         }}
       >
-        <h3>
-          <Link to={`/jobs/${job.id}`} className={styles.jobTitleLink}>
-            {job.title}
-          </Link>
-        </h3>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* 2. Create a new drag handle element and give IT the listeners. */}
+          <span {...listeners} className={styles.dragHandle}>
+            ⠿
+          </span>
+          <h3>
+            <Link to={`/jobs/${job.id}`} className={styles.jobTitleLink}>
+              {job.title}
+            </Link>
+          </h3>
+        </div>
         <div>
-          {/* 2. Add the new button */}
+          {/* Add the new button */}
           <button onClick={onToggleStatus} style={{ marginRight: "10px" }}>
             {job.status === "active" ? "Archive" : "Unarchive"}
           </button>

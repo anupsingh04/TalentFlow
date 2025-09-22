@@ -27,3 +27,14 @@
 .jobTitleLink:hover {
   color: #007bff;
 }
+
+.dragHandle {
+  display: inline-block;
+  cursor: grab;
+  padding: 8px;
+  color: #888;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
