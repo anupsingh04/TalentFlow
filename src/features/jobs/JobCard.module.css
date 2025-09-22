@@ -17,3 +17,13 @@
   margin-right: 4px;
   font-size: 12px;
 }
+
+.jobTitleLink {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s ease-in-out;
+}
+
+.jobTitleLink:hover {
+  color: #007bff;
+}

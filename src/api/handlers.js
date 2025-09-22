@@ -82,4 +82,18 @@ export const handlers = [
 
     return HttpResponse.json(updates);
   }),
+
+  // Handles GET /jobs/:id request (Fetch single job)
+  http.get("/jobs/:id", async ({ params }) => {
+    const { id } = params;
+
+    // Dexie's get() is highly efficient for fetching by primary key
+    const job = await db.jobs.get(Number(id));
+
+    if (job) {
+      return HttpResponse.json(job);
+    }
+    // Return a 404 if the job is not found
+    return new HttpResponse(null, { status: 404 });
+  }),
 ];

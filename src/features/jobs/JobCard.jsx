@@ -1,6 +1,7 @@
 // src/features/jobs/JobCard.jsx
 import PropTypes from "prop-types";
 import styles from "./JobCard.module.css";
+import { Link } from "react-router-dom";
 
 //1. Add 'onToggleStatus' as props
 function JobCard({ job, onEdit, onToggleStatus }) {
@@ -13,7 +14,11 @@ function JobCard({ job, onEdit, onToggleStatus }) {
           alignItems: "center",
         }}
       >
-        <h3>{job.title}</h3>
+        <h3>
+          <Link to={`/jobs/${job.id}`} className={styles.jobTitleLink}>
+            {job.title}
+          </Link>
+        </h3>
         <div>
           {/* 2. Add the new button */}
           <button onClick={onToggleStatus} style={{ marginRight: "10px" }}>
@@ -43,7 +48,7 @@ JobCard.propTypes = {
     tags: PropTypes.arrayOf(PropTypes.string).isRequired,
   }).isRequired,
   onEdit: PropTypes.func.isRequired,
-  onToggleStatus: PropTypes.func.isRequired, // 3. Add the new prop type
+  onToggleStatus: PropTypes.func.isRequired,
 };
 
 export default JobCard;

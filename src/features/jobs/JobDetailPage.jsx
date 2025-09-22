@@ -1,17 +1,18 @@
 // src/features/jobs/JobDetailPage.jsx
-import { useParams, Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchJob = async (jobId) => {
+// This function fetches a single job by its ID
+const fetchJobById = async (jobId) => {
   const response = await fetch(`/jobs/${jobId}`);
   if (!response.ok) {
-    throw new Error("Network response was not ok");
+    throw new Error("Job not found");
   }
   return response.json();
 };
 
 function JobDetailPage() {
-  const { jobId } = useParams();
+  const { jobId } = useParams(); // Get the jobId from the URL parameter
 
   const {
     data: job,
@@ -19,8 +20,8 @@ function JobDetailPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["job", jobId],
-    queryFn: () => fetchJob(jobId),
+    queryKey: ["job", jobId], // A unique key for this specific job query
+    queryFn: () => fetchJobById(jobId),
   });
 
   if (isLoading) {
@@ -28,12 +29,18 @@ function JobDetailPage() {
   }
 
   if (isError) {
-    return <div>Error: {error.message}</div>;
+    return (
+      <div>
+        <h2>Error loading job</h2>
+        <p>{error.message}</p>
+        <Link to="/">Back to Jobs Board</Link>
+      </div>
+    );
   }
 
   return (
     <div>
-      <Link to="/">&larr; Back to Jobs List</Link>
+      <Link to="/">&larr; Back to Jobs Board</Link>
       <h1>{job.title}</h1>
       <p>
         <strong>Status:</strong> {job.status}
@@ -42,6 +49,7 @@ function JobDetailPage() {
         <strong>Description:</strong> {job.description}
       </p>
       <div>
+        <strong>Tags:</strong>
         {job.tags.map((tag) => (
           <span
             key={tag}
