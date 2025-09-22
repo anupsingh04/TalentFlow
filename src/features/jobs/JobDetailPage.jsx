@@ -40,7 +40,7 @@ function JobDetailPage() {
 
   return (
     <div>
-      <Link to="/">&larr; Back to Jobs Board</Link>
+      <Link to="/jobs">&larr; Back to Jobs Board</Link>
       <h1>{job.title}</h1>
       <p>
         <strong>Status:</strong> {job.status}
@@ -63,6 +63,12 @@ function JobDetailPage() {
             {tag}
           </span>
         ))}
+      </div>
+      {/* Add a link to the assessment builder */}
+      <div style={{ marginTop: "20px" }}>
+        <Link to={`/jobs/${jobId}/assessment`}>
+          <button>Edit Assessment</button>
+        </Link>
       </div>
     </div>
   );

@@ -291,6 +291,31 @@ export const handlers = [
     const id = await db.notes.add(newNote);
     return HttpResponse.json({ ...newNote, id }, { status: 201 });
   }),
-
   // <----- CANDIDATE HANDLERS END  ----->
+
+  // <----- ASSESSMENT HANDLERS START  ----->
+  // Handles GET /assessments/:jobId (Fetch assessment structure)
+  http.get("/assessments/:jobId", async ({ params }) => {
+    const jobId = Number(params.jobId);
+    const assessment = await db.assessments.get(jobId);
+
+    if (assessment) {
+      return HttpResponse.json(assessment);
+    }
+    // If no assessment exists, return a default empty structure
+    return HttpResponse.json({ jobId, sections: [] });
+  }),
+
+  // Handles PUT /assessments/:jobId (Save/update assessment structure)
+  http.put("/assessments/:jobId", async ({ request, params }) => {
+    const jobId = Number(params.jobId);
+    const assessmentData = await request.json();
+
+    // .put() will add or update the record based on the primary key (jobId)
+    await db.assessments.put({ jobId, ...assessmentData });
+
+    return HttpResponse.json({ success: true });
+  }),
+
+  // <----- ASSESSMENT HANDLERS END  ----->
 ];

@@ -38,3 +38,11 @@ db.version(6).stores({
   assessments: "++id, jobId",
   notes: "++id, candidateId", // Links notes to a candidate
 });
+
+// Version 7 Schema - Defines the assessments table schema
+db.version(7).stores({
+  jobs: "++id, slug, order, status, *tags, description",
+  candidates: "++id, email, stage",
+  notes: "++id, candidateId",
+  assessments: "&jobId", // '&' makes jobId a unique primary key
+});
