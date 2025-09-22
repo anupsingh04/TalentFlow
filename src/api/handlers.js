@@ -11,6 +11,11 @@ export const handlers = [
     const search = url.searchParams.get("search");
     const tag = url.searchParams.get("tag");
 
+    // --- Start of new pagination logic ---
+    const page = parseInt(url.searchParams.get("page") || "1", 10);
+    const pageSize = 10; // Let's set a page size of 10
+    // --- End of new pagination logic ---
+
     let jobsCollection = db.jobs;
 
     //Apply status filter if it exists
@@ -23,21 +28,31 @@ export const handlers = [
       jobsCollection = jobsCollection.where("tags").equals(tag);
     }
 
-    let allJobs = await jobsCollection.toArray();
+    let filteredJobs = await jobsCollection.toArray();
 
     //Apply search filter if it exists
     if (search) {
-      allJobs = allJobs.filter((job) =>
+      filteredJobs = filteredJobs.filter((job) =>
         job.title.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    //Respond with the filtered jobs
-    if (!allJobs.length) {
-      console.warn("Warning: No jobs found in database");
-    }
-    console.log("GET /jobs: ", allJobs);
-    return HttpResponse.json(allJobs);
+    // --- Start of updated response logic ---
+    // Get the total count *before* slicing for pagination
+    const totalCount = filteredJobs.length;
+
+    // Apply pagination to the filtered array
+    const paginatedJobs = filteredJobs.slice(
+      (page - 1) * pageSize,
+      page * pageSize
+    );
+
+    // Return a new object shape with the jobs and the total count
+    return HttpResponse.json({
+      jobs: paginatedJobs,
+      totalCount: totalCount,
+    });
+    // --- End of updated response logic ---
   }),
 
   //Handles POST /jobs request (Create job)

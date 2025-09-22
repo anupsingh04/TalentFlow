@@ -18,3 +18,8 @@ db.version(2).stores({
 db.version(3).stores({
   jobs: "++id, slug, order, status, *tags", // Add *tags as a multi-entry index
 });
+
+// NEW: Version 4 Schema - Add this block
+db.version(4).stores({
+  jobs: "++id, slug, order, status, *tags, description", // Add description field
+});

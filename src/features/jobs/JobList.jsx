@@ -8,11 +8,12 @@ import JobForm from "./JobForm"; //3. Import JobForm
 // This is the function that will fetch our data
 const fetchJobs = async ({ queryKey }) => {
   // Destructure the queryKey to get the status and search parameters
-  const [_key, { status, search, tag }] = queryKey;
+  const [_key, { status, search, tag, page }] = queryKey;
   const params = new URLSearchParams();
   if (status && status !== "all") params.append("status", status);
   if (search) params.append("search", search);
   if (tag) params.append("tag", tag);
+  if (page) params.append("page", page); // Add page to the URL params
 
   const response = await fetch(`/jobs?${params.toString()}`);
   // const response = await fetch("/jobs");
@@ -29,6 +30,7 @@ function JobsList() {
   const status = searchParams.get("status") || "all";
   const search = searchParams.get("search") || "";
   const tag = searchParams.get("tag") || "";
+  const page = parseInt(searchParams.get("page") || "1", 10); //Get Page
 
   //4. Add state fot the modal and the job being edited
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,12 +73,27 @@ function JobsList() {
 
   // useQuery will fetch, cache, and manage the state of our data
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["jobs", { status, search, tag }], // A unique key for this query
+    queryKey: ["jobs", { status, search, tag, page }], // A unique key for this query
     queryFn: fetchJobs, // The function to fetch the data
   });
 
+  // The data object has changed shape, so we destructure it
+  const jobs = data?.jobs || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / 10); // Page size is 10
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return; // Prevent invalid page numbers
+    setSearchParams((prev) => {
+      prev.set("page", newPage);
+      return prev;
+    });
+  };
+
   //Calculate unique tags from the data
-  const allTags = data ? [...new Set(data.flatMap((job) => job.tags))] : [];
+  const allTags = data?.jobs
+    ? [...new Set(data.jobs.flatMap((job) => job.tags))]
+    : [];
 
   const handleTagChange = (newTag) => {
     setSearchParams((prev) => {
@@ -167,18 +184,38 @@ function JobsList() {
       {/* Filter UI End */}
 
       <div>
-        {data.map((job) => {
-          //pass the edit handler to each JobCard and
-          //pass the mutation trigger to the onToggleStatus prop
-          return (
-            <JobCard
-              key={job.id}
-              job={job}
-              onEdit={() => handleOpenEditModal(job)}
-              onToggleStatus={() => toggleJobStatusMutation.mutate(job)}
-            />
-          );
-        })}
+        {/* Map over jobs, which is now inside the data object */}
+        {jobs.map((job) => (
+          <JobCard
+            key={job.id}
+            job={job}
+            onEdit={() => handleOpenEditModal(job)}
+            onToggleStatus={() => toggleJobStatusMutation.mutate(job)}
+          />
+        ))}
+      </div>
+
+      {/* --- Add Pagination Controls --- */}
+      <div
+        style={{
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <button onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
+          Previous
+        </button>
+        <span style={{ margin: "0 15px" }}>
+          Page {page} of {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(page + 1)}
+          disabled={page >= totalPages}
+        >
+          Next
+        </button>
       </div>
 
       {/* 8. Render the Modal and JobForm */}
