@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import JobCard from "./JobCard";
 import { useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Modal from "../../components/Modal";
 import JobForm from "./JobForm";
 
@@ -31,8 +31,11 @@ const fetchJobs = async ({ queryKey }) => {
 };
 
 function JobsList() {
-  const [searchParams, setSearchParams] = useSearchParams(); //3. Get the search params from the URL
+  const [searchParams, setSearchParams] = useSearchParams(); //Get the search params from the URL
   const queryClient = useQueryClient(); //make sure we have queryClient
+
+  //Add state for the client-side search term
+  const [searchTerm, setSearchTerm] = useState("");
 
   // filter and page states
   const status = searchParams.get("status") || "all";
@@ -45,7 +48,7 @@ function JobsList() {
   const [jobToEdit, setJobToEdit] = useState(null);
 
   // useQuery will fetch, cache, and manage the state of our data
-  const queryKey = ["jobs", { status, search, tag, page }];
+  const queryKey = ["jobs", { status, tag, page }];
   const { data, isLoading, isError, error } = useQuery({
     queryKey, // A unique key for this query
     queryFn: fetchJobs, // The function to fetch the data
@@ -58,6 +61,15 @@ function JobsList() {
       setOrderedJobs(data.jobs);
     }
   }, [data]);
+
+  //Perform client-side search on the fetched & ordered data
+  const filteredJobs = useMemo(() => {
+    if (!orderedJobs) return [];
+    if (!searchTerm) return orderedJobs;
+    return orderedJobs.filter((job) =>
+      job.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [orderedJobs, searchTerm]);
 
   // Add the new mutation for toggling status
   const toggleJobStatusMutation = useMutation({
@@ -159,15 +171,6 @@ function JobsList() {
     setJobToEdit(null); //clear the job to edit
   };
 
-  // The data object has changed shape, so we destructure it
-  const jobs = data?.jobs || [];
-  const totalCount = data?.totalCount || 0;
-  const totalPages = Math.ceil(totalCount / 10); // Page size is 10
-  //Calculate unique tags from the data
-  const allTags = data?.jobs
-    ? [...new Set(data.jobs.flatMap((job) => job.tags))]
-    : [];
-
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages) return; // Prevent invalid page numbers
     setSearchParams((prev) => {
@@ -190,21 +193,20 @@ function JobsList() {
   const handleStatusChange = (newStatus) => {
     setSearchParams((prev) => {
       prev.set("status", newStatus);
+      prev.set("page", "1"); // Reset to first page on filter change
       return prev;
     });
   };
 
-  const handleSearchChange = (event) => {
-    const newSearch = event.target.value;
-    setSearchParams((prev) => {
-      if (newSearch) {
-        prev.set("search", newSearch);
-      } else {
-        prev.delete("search");
-      }
-      return prev;
-    });
-  };
+  // The data object has changed shape, so we destructure it
+  const jobs = data?.jobs || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / 10); // Page size is 10
+  //Calculate unique tags from the data
+  const allTags = data?.jobs
+    ? [...new Set(data.jobs.flatMap((job) => job.tags))]
+    : [];
+  const STATUSES = ["all", "active", "archived"];
 
   // Show a loading message while data is being fetched
   if (isLoading) {
@@ -231,16 +233,39 @@ function JobsList() {
       </div>
 
       {/* Filter UI start */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          marginBottom: "20px",
+          alignItems: "center",
+        }}
+      >
         <input
           type="text"
           placeholder="Search by title..."
-          value={search}
-          onChange={handleSearchChange}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ padding: "8px" }}
         />
-        <button onClick={() => handleStatusChange("all")}>All</button>
-        <button onClick={() => handleStatusChange("active")}>Active</button>
-        <button onClick={() => handleStatusChange("archived")}>Archived</button>
+        {/* Replace status buttons with a dropdown menu */}
+        <div>
+          <label htmlFor="status-filter" style={{ marginRight: "5px" }}>
+            Status:
+          </label>
+          <select
+            id="status-filter"
+            value={status}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            style={{ padding: "8px" }}
+          >
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       {/* Add this new block for tag filters */}
       <div
@@ -264,18 +289,18 @@ function JobsList() {
       </div>
       {/* Filter UI End */}
 
-      <div>
-        {/* 5. Wrap the list in the DndContext and SortableContext */}
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
+      {/* Check the length of 'filteredJobs' for the empty message */}
+      {filteredJobs.length === 0 ? (
+        <div>No jobs found.</div>
+      ) : (
+        <DndContext /* ... */>
           <SortableContext
-            items={orderedJobs.map((j) => j.id)}
+            // The items for SortableContext should be from 'filteredJobs'
+            items={filteredJobs.map((j) => j.id)}
             strategy={verticalListSortingStrategy}
           >
-            {/* 6. Map over the local 'orderedJobs' state */}
-            {orderedJobs.map((job) => (
+            {/* Map over 'filteredJobs' to render the cards */}
+            {filteredJobs.map((job) => (
               <JobCard
                 key={job.id}
                 job={job}
@@ -285,7 +310,7 @@ function JobsList() {
             ))}
           </SortableContext>
         </DndContext>
-      </div>
+      )}
 
       {/* --- Add Pagination Controls --- */}
       <div
