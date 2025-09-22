@@ -269,5 +269,28 @@ export const handlers = [
     }
   }),
 
+  // Handles GET /candidates/:id/notes
+  http.get("/candidates/:id/notes", async ({ params }) => {
+    const candidateId = Number(params.id);
+    // Use .where() to find all notes for a specific candidate
+    const notes = await db.notes.where({ candidateId }).toArray();
+    return HttpResponse.json(notes.reverse()); // Show newest first
+  }),
+
+  // Handles POST /candidates/:id/notes
+  http.post("/candidates/:id/notes", async ({ request, params }) => {
+    const candidateId = Number(params.id);
+    const { content } = await request.json();
+
+    const newNote = {
+      candidateId,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
+    const id = await db.notes.add(newNote);
+    return HttpResponse.json({ ...newNote, id }, { status: 201 });
+  }),
+
   // <----- CANDIDATE HANDLERS END  ----->
 ];

@@ -30,3 +30,11 @@ db.version(5).stores({
   candidates: "++id, email, stage", // Schema updated with new index
   assessments: "++id, jobId", // Schema carried over
 });
+
+// Version 6 Schema - Adds a 'notes' table
+db.version(6).stores({
+  jobs: "++id, slug, order, status, *tags, description",
+  candidates: "++id, email, stage",
+  assessments: "++id, jobId",
+  notes: "++id, candidateId", // Links notes to a candidate
+});
