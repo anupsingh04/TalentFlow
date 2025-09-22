@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
 import { db } from "./db";
 
+//Helper function for reordering jobs "PATCH /jobs/:id/reorder" request
 function arrayMove(arr, fromIndex, toIndex) {
   const element = arr[fromIndex];
   arr.splice(fromIndex, 1);
@@ -222,6 +223,26 @@ export const handlers = [
     await new Promise((res) => setTimeout(res, 300));
 
     return HttpResponse.json(timelineEvents);
+  }),
+
+  // Handles POST /candidates (Create new candidate)
+  http.post("/candidates", async ({ request }) => {
+    const newCandidateData = await request.json();
+
+    const newCandidate = {
+      ...newCandidateData,
+      stage: "applied", // New candidates always start in the 'applied' stage
+    };
+
+    try {
+      const id = await db.candidates.add(newCandidate);
+      return HttpResponse.json({ ...newCandidate, id }, { status: 201 });
+    } catch (error) {
+      return new HttpResponse(
+        JSON.stringify({ message: "Failed to create candidate" }),
+        { status: 500 }
+      );
+    }
   }),
 
   // Handles PATCH /candidates/:id (for updating stage)

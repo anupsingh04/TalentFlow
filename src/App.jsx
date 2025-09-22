@@ -18,7 +18,7 @@ function App() {
           path="/candidates/:candidateId"
           element={<CandidateProfilePage />}
         />
-        <Route path="/kanban" element={<KanbanBoard />} />
+        <Route path="candidates/kanban" element={<KanbanBoard />} />
       </Routes>
     </div>
   );

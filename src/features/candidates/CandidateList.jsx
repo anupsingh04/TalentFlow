@@ -6,6 +6,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import CandidateCard from "./CandidateCard";
 import styles from "./CandidateCard.module.css";
 import { Link } from "react-router-dom";
+import Modal from "../../components/Modal";
+import CandidateForm from "./CandidateForm";
 
 // Data fetching function for candidates
 const fetchCandidates = async ({ queryKey }) => {
@@ -22,6 +24,7 @@ const fetchCandidates = async ({ queryKey }) => {
 function CandidateList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const stage = searchParams.get("stage") || "all";
 
@@ -84,16 +87,16 @@ function CandidateList() {
         }}
       >
         <h2>Candidates</h2>
-        <Link
-          to="/kanban"
-          style={
-            {
-              /* ... some styling ... */
-            }
-          }
-        >
-          View Kanban Board
-        </Link>
+        <div>
+          {/* Add Create Candidate button */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            style={{ marginRight: "10px" }}
+          >
+            Add New Candidate
+          </button>
+          <Link to="/candidates/kanban">View Kanban Board</Link>
+        </div>
       </div>
 
       {/* Filter and Search UI */}
@@ -178,6 +181,15 @@ function CandidateList() {
           </div>
         </div>
       )}
+
+      {/* Add the Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Create New Candidate"
+      >
+        <CandidateForm onSuccess={() => setIsModalOpen(false)} />
+      </Modal>
     </div>
   );
 }
