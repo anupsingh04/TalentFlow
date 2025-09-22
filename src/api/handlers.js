@@ -1,6 +1,13 @@
 import { http, HttpResponse } from "msw";
 import { db } from "./db";
 
+function arrayMove(arr, fromIndex, toIndex) {
+  const element = arr[fromIndex];
+  arr.splice(fromIndex, 1);
+  arr.splice(toIndex, 0, element);
+  return arr;
+}
+
 export const handlers = [
   //Add API handlers here
 
@@ -10,7 +17,6 @@ export const handlers = [
     const status = url.searchParams.get("status");
     const search = url.searchParams.get("search");
     const tag = url.searchParams.get("tag");
-
     // --- Start of new pagination logic ---
     const page = parseInt(url.searchParams.get("page") || "1", 10);
     const pageSize = 10; // Let's set a page size of 10
@@ -28,7 +34,9 @@ export const handlers = [
       jobsCollection = jobsCollection.where("tags").equals(tag);
     }
 
-    let filteredJobs = await jobsCollection.toArray();
+    // THE FIX: Sort the collection by the 'order' property here.
+    // This ensures the data is always sent to the client in the correct order.
+    let filteredJobs = await jobsCollection.orderBy("order").toArray();
 
     //Apply search filter if it exists
     if (search) {
@@ -95,5 +103,55 @@ export const handlers = [
     }
     // Return a 404 if the job is not found
     return new HttpResponse(null, { status: 404 });
+  }),
+
+  // NEW - Handles PATCH /jobs/:id/reorder request
+  http.patch("/jobs/:id/reorder", async ({ request }) => {
+    // Simulate network latency
+    await new Promise((res) => setTimeout(res, 500 + Math.random() * 800));
+
+    // Simulate failure rate
+    if (Math.random() < 0.25) {
+      console.error("💥 Simulated API Error: Failed to reorder job.");
+      return new HttpResponse(JSON.stringify({ message: "Server error" }), {
+        status: 500,
+      });
+    }
+
+    const { activeId, overId } = await request.json();
+
+    try {
+      // 1. Fetch all jobs, sorted by their current order
+      const allJobs = await db.jobs.orderBy("order").toArray();
+
+      // 2. Find the current indexes of the dragged and target items
+      const fromIndex = allJobs.findIndex((job) => job.id === activeId);
+      const toIndex = allJobs.findIndex((job) => job.id === overId);
+
+      if (fromIndex === -1 || toIndex === -1) {
+        throw new Error("Job not found for reordering");
+      }
+
+      // 3. Reorder the array in memory
+      const reorderedJobs = arrayMove([...allJobs], fromIndex, toIndex);
+
+      // 4. Create an array of updated jobs with new 'order' properties
+      const updates = reorderedJobs.map((job, index) => ({
+        ...job,
+        order: index + 1, // Re-assign order based on new array position
+      }));
+
+      // 5. Use bulkPut to efficiently update all changed jobs in Dexie
+      await db.jobs.bulkPut(updates);
+
+      console.log("✅ API Success: Job order persisted in the database.");
+      return HttpResponse.json({ success: true });
+    } catch (error) {
+      console.error("Error processing reorder in API:", error);
+      return new HttpResponse(
+        JSON.stringify({ message: "Internal server error" }),
+        { status: 500 }
+      );
+    }
   }),
 ];

@@ -1,12 +1,30 @@
-// src/features/jobs/JobCard.jsx
 import PropTypes from "prop-types";
 import styles from "./JobCard.module.css";
 import { Link } from "react-router-dom";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-//1. Add 'onToggleStatus' as props
+//Add 'onToggleStatus' as props
 function JobCard({ job, onEdit, onToggleStatus }) {
+  // Use the useSortable hook
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: job.id });
+
+  // Apply styles for the drag-and-drop animation
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    cursor: "grab", // Add a grab cursor to indicate it's draggable
+  };
+
   return (
-    <div className={styles.card}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={styles.card}
+    >
       <div
         style={{
           display: "flex",

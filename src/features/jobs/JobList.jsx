@@ -1,9 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import JobCard from "./JobCard";
 import { useSearchParams } from "react-router-dom";
-import { useState } from "react"; //1. Import useState
-import Modal from "../../components/Modal"; //2. Import Modal
-import JobForm from "./JobForm"; //3. Import JobForm
+import { useState, useEffect } from "react";
+import Modal from "../../components/Modal";
+import JobForm from "./JobForm";
+
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 // This is the function that will fetch our data
 const fetchJobs = async ({ queryKey }) => {
@@ -27,14 +34,30 @@ function JobsList() {
   const [searchParams, setSearchParams] = useSearchParams(); //3. Get the search params from the URL
   const queryClient = useQueryClient(); //make sure we have queryClient
 
+  // filter and page states
   const status = searchParams.get("status") || "all";
   const search = searchParams.get("search") || "";
   const tag = searchParams.get("tag") || "";
   const page = parseInt(searchParams.get("page") || "1", 10); //Get Page
 
-  //4. Add state fot the modal and the job being edited
+  // modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jobToEdit, setJobToEdit] = useState(null);
+
+  // useQuery will fetch, cache, and manage the state of our data
+  const queryKey = ["jobs", { status, search, tag, page }];
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey, // A unique key for this query
+    queryFn: fetchJobs, // The function to fetch the data
+  });
+
+  // Add local state to manage the visual order of jobs for dnd
+  const [orderedJobs, setOrderedJobs] = useState([]);
+  useEffect(() => {
+    if (data?.jobs) {
+      setOrderedJobs(data.jobs);
+    }
+  }, [data]);
 
   // Add the new mutation for toggling status
   const toggleJobStatusMutation = useMutation({
@@ -55,7 +78,72 @@ function JobsList() {
     },
   });
 
-  //5. Add handlers to open close the modal
+  //Create the mutation for reordering with optimistic updates
+  const reorderMutation = useMutation({
+    mutationFn: ({ activeId, overId }) => {
+      // This function just calls the API
+      return fetch(`/jobs/${activeId}/reorder`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ activeId, overId }), // Send necessary data
+      });
+    },
+    // This onMutate function is the core of the optimistic update
+    onMutate: async ({ active, over }) => {
+      // A. Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey });
+
+      // B. Snapshot the previous value
+      const previousJobsData = queryClient.getQueryData(queryKey);
+
+      // C. Optimistically update to the new value
+      queryClient.setQueryData(queryKey, (oldData) => {
+        if (!oldData) return;
+        const oldJobs = oldData.jobs;
+        const oldIndex = oldJobs.findIndex((j) => j.id === active.id);
+        const newIndex = oldJobs.findIndex((j) => j.id === over.id);
+        const newJobsArray = arrayMove(oldJobs, oldIndex, newIndex);
+        return { ...oldData, jobs: newJobsArray };
+      });
+
+      // D. Return a context object with the snapshotted value
+      return { previousJobsData };
+    },
+    // E. If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, variables, context) => {
+      console.error("Rollback due to error:", err);
+      queryClient.setQueryData(queryKey, context.previousJobsData);
+    },
+    // F. Always refetch after error or success to ensure server state is synced
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  // Handle the drag end event from DndContext
+  function handleDragEnd(event) {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      // First, update our local state for a smooth UI experience
+      setOrderedJobs((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+
+      // Then, trigger the mutation to tell the server
+      reorderMutation.mutate({
+        active,
+        over,
+        activeId: active.id,
+        overId: over.id,
+      });
+    }
+  }
+
+  // Modal Handlers
+  //Add handlers to open close the modal
   const handleOpenCreateModal = () => {
     setJobToEdit(null); //Ensure we're in "create" mode
     setIsModalOpen(true);
@@ -71,16 +159,14 @@ function JobsList() {
     setJobToEdit(null); //clear the job to edit
   };
 
-  // useQuery will fetch, cache, and manage the state of our data
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["jobs", { status, search, tag, page }], // A unique key for this query
-    queryFn: fetchJobs, // The function to fetch the data
-  });
-
   // The data object has changed shape, so we destructure it
   const jobs = data?.jobs || [];
   const totalCount = data?.totalCount || 0;
   const totalPages = Math.ceil(totalCount / 10); // Page size is 10
+  //Calculate unique tags from the data
+  const allTags = data?.jobs
+    ? [...new Set(data.jobs.flatMap((job) => job.tags))]
+    : [];
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages) return; // Prevent invalid page numbers
@@ -89,11 +175,6 @@ function JobsList() {
       return prev;
     });
   };
-
-  //Calculate unique tags from the data
-  const allTags = data?.jobs
-    ? [...new Set(data.jobs.flatMap((job) => job.tags))]
-    : [];
 
   const handleTagChange = (newTag) => {
     setSearchParams((prev) => {
@@ -184,15 +265,26 @@ function JobsList() {
       {/* Filter UI End */}
 
       <div>
-        {/* Map over jobs, which is now inside the data object */}
-        {jobs.map((job) => (
-          <JobCard
-            key={job.id}
-            job={job}
-            onEdit={() => handleOpenEditModal(job)}
-            onToggleStatus={() => toggleJobStatusMutation.mutate(job)}
-          />
-        ))}
+        {/* 5. Wrap the list in the DndContext and SortableContext */}
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={orderedJobs.map((j) => j.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {/* 6. Map over the local 'orderedJobs' state */}
+            {orderedJobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onEdit={() => handleOpenEditModal(job)}
+                onToggleStatus={() => toggleJobStatusMutation.mutate(job)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
       </div>
 
       {/* --- Add Pagination Controls --- */}
