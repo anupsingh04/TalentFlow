@@ -55,18 +55,43 @@ function CandidateForm({ onSuccess }) {
   });
 
   return (
-    <form onSubmit={handleSubmit(mutate)}>
+    // Add spacing between form elements
+    <form onSubmit={handleSubmit(mutate)} className="flex flex-col gap-4">
       <div>
-        <label>Full Name</label>
-        <input {...register("name")} />
-        <p style={{ color: "red" }}>{errors.name?.message}</p>
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Full Name
+        </label>
+        <input
+          id="name"
+          {...register("name")}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        />
+        <p className="mt-1 text-sm text-red-600">{errors.name?.message}</p>
       </div>
+
       <div>
-        <label>Email Address</label>
-        <input {...register("email")} />
-        <p style={{ color: "red" }}>{errors.email?.message}</p>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Email Address
+        </label>
+        <input
+          id="email"
+          {...register("email")}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        />
+        <p className="mt-1 text-sm text-red-600">{errors.email?.message}</p>
       </div>
-      <button type="submit" disabled={isPending}>
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
+      >
         {isPending ? "Saving..." : "Create Candidate"}
       </button>
     </form>

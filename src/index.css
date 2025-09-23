@@ -1,7 +1,19 @@
 @import "tailwindcss";
 
+/* --- Custom styles to fix the dialog/modal --- */
+
+/* This helps reset any conflicting styles and re-center the modal */
+dialog {
+  margin: auto;
+}
+
+/* This explicitly sets the semi-transparent background for the overlay */
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
 /* Styles for react-mentions */
-.mentions {
+/* .mentions {
   margin: 0;
 }
 
@@ -38,4 +50,4 @@
   50% {
     opacity: 0.5;
   }
-}
+} */
