@@ -8,7 +8,7 @@ A comprehensive front-end application built with React that simulates a modern h
 
 ## Live Demo
 
-**[Live demo coming soon (to be deployed on Vercel/Netlify).]**
+**https://talent-flow-lovat.vercel.app/**
 
 ---
 
