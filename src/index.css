@@ -27,3 +27,13 @@
 .mentions__suggestions__item--focused {
   background-color: #eee;
 }
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

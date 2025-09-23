@@ -15,6 +15,11 @@ export const handlers = [
   // <----- JOB HANDLERS START  ----->
   //Handles a GET /jobs request
   http.get("/jobs", async ({ request }) => {
+    // --- ADD THIS DELAY ---
+    // This will pause execution for 0.2s - 1.2s to simulate a network request
+    await new Promise((res) => setTimeout(res, 200 + Math.random() * 1000));
+    // --- END DELAY ---
+
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const search = url.searchParams.get("search");
@@ -69,23 +74,39 @@ export const handlers = [
 
   //Handles POST /jobs request (Create job)
   http.post("/jobs", async ({ request }) => {
+    // --- ADD THIS DELAY ---
+    // This will pause execution for 0.2s - 1.2s to simulate a network request
+    await new Promise((res) => setTimeout(res, 200 + Math.random() * 1000));
+    // --- END DELAY ---
+
     const newJobData = await request.json();
 
-    // Ensure a default status is set
+    // Get the current number of jobs to determine the new order
+    const jobCount = await db.jobs.count();
+
     const newJob = {
-      status: "active", // Default status
+      status: "active",
       ...newJobData,
-      //Simple slug generation
       slug: newJobData.title.toLowerCase().replace(/\s+/g, "-"),
+      order: jobCount + 1, // Add the order property
     };
 
-    //Add to database
-    const id = await db.jobs.add(newJob);
-    return HttpResponse.json({ ...newJob, id }, { status: 201 });
+    try {
+      const id = await db.jobs.add(newJob);
+      return HttpResponse.json({ ...newJob, id }, { status: 201 });
+    } catch (error) {
+      console.error("Failed to add job to DB:", error);
+      return new HttpResponse(null, { status: 500 });
+    }
   }),
 
   //Handles PATCH /jobs/:id request (Update job)
   http.patch("/jobs/:id", async ({ request, params }) => {
+    // --- ADD DELAY ---
+    // This will pause execution for 0.2s - 1.2s to simulate a network request
+    await new Promise((res) => setTimeout(res, 200 + Math.random() * 1000));
+    // --- END DELAY ---
+
     const { id } = params;
     const updates = await request.json();
 

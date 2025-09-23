@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import JobsList from "./features/jobs/JobList";
 import JobDetailPage from "./features/jobs/JobDetailPage";
 import CandidateList from "./features/candidates/CandidateList";
@@ -11,6 +12,7 @@ import AssessmentRuntime from "./features/assessments/AssessmentRuntime";
 function App() {
   return (
     <div>
+      <Toaster position="top-center" />
       <h1>TALENTFLOW</h1>
       <Routes>
         <Route path="/jobs" element={<JobsList />} />

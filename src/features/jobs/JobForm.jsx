@@ -1,11 +1,12 @@
+// src/features/jobs/JobForm.jsx
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import PropTypes from "prop-types";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
-// Validation schema using Yup
 const schema = yup
   .object()
   .shape({
@@ -14,7 +15,6 @@ const schema = yup
   })
   .required();
 
-// The API call function
 const saveJob = async (jobData) => {
   const { id, ...data } = jobData;
   const method = id ? "PATCH" : "POST";
@@ -43,31 +43,34 @@ function JobForm({ onSuccess, jobToEdit }) {
     resolver: yupResolver(schema),
   });
 
-  // Pre-fill form if we are editing
   useEffect(() => {
     if (jobToEdit) {
-      reset({
-        ...jobToEdit,
-        tags: jobToEdit.tags.join(", "), // Convert array to string for input
-      });
+      reset({ ...jobToEdit, tags: jobToEdit.tags.join(", ") });
     } else {
-      reset({ title: "", tags: "" }); // Clear form for creation
+      reset({ title: "", tags: "" });
     }
   }, [jobToEdit, reset]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: saveJob,
-    onSuccess: () => {
-      // This tells TanStack Query to refetch the 'jobs' query
-      queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      onSuccess(); // This will close the modal
+    // THE FIX: Make onSuccess async and await the invalidation
+    onSuccess: async () => {
+      toast.success(
+        jobToEdit ? "Job updated successfully!" : "Job created successfully!"
+      );
+      // Wait for the query to be invalidated before proceeding
+      await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      onSuccess(); // Now, close the modal
+    },
+    onError: (error) => {
+      toast.error(`Error: ${error.message}`);
     },
   });
 
   const onSubmit = (data) => {
     const jobData = {
       ...data,
-      tags: data.tags.split(",").map((tag) => tag.trim()), // Convert string back to array
+      tags: data.tags.split(",").map((tag) => tag.trim()),
     };
     if (jobToEdit) {
       jobData.id = jobToEdit.id;
@@ -87,9 +90,8 @@ function JobForm({ onSuccess, jobToEdit }) {
         <input {...register("tags")} />
         <p style={{ color: "red" }}>{errors.tags?.message}</p>
       </div>
-
       <button type="submit" disabled={isPending}>
-        {isPending ? "Saving..." : jobToEdit ? "Edit Job" : "Save Job"}
+        {isPending ? "Saving..." : jobToEdit ? "Update Job" : "Save Job"}
       </button>
     </form>
   );

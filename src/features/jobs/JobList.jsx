@@ -4,13 +4,13 @@ import { useSearchParams } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import Modal from "../../components/Modal";
 import JobForm from "./JobForm";
-
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import JobCardSkeleton from "./JobCardSkeleton";
 
 // This is the function that will fetch our data
 const fetchJobs = async ({ queryKey }) => {
@@ -210,7 +210,15 @@ function JobsList() {
 
   // Show a loading message while data is being fetched
   if (isLoading) {
-    return <div>Loading jobs...</div>;
+    return (
+      <div className="jobs-list">
+        {/* ... Filter UI can be shown here if you want ... */}
+        {/* Render 5 skeleton cards as placeholders */}
+        {Array.from({ length: 5 }).map((_, index) => (
+          <JobCardSkeleton key={index} />
+        ))}
+      </div>
+    );
   }
 
   // Show an error message if the fetch fails
