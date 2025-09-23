@@ -230,46 +230,37 @@ function JobsList() {
   }
 
   return (
-    <div className="jobs-list">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2>Jobs Board</h2>
-        {/* 6. Add Create Job button */}
-        <button onClick={handleOpenCreateModal}>Create New Job</button>
+    <div className="p-4 md:p-8">
+      {/* Page Header (no changes) */}
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+        <h2 className="text-3xl font-bold text-gray-800">Jobs Board</h2>
+        <button
+          onClick={handleOpenCreateModal}
+          className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Create New Job
+        </button>
       </div>
 
-      {/* Filter UI start */}
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          marginBottom: "20px",
-          alignItems: "center",
-        }}
-        className={styles.filterContainer}
-      >
-        <input
-          type="text"
-          placeholder="Search by title..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ padding: "8px" }}
-        />
-        {/* Replace status buttons with a dropdown menu */}
-        <div>
-          <label htmlFor="status-filter" style={{ marginRight: "5px" }}>
-            Status:
-          </label>
+      {/* Filter Controls Container */}
+      {/* 3. The main container is now always a flex column to separate the rows */}
+      <div className="p-4 bg-white rounded-lg shadow-sm mb-6 flex flex-col gap-4">
+        {/* 2. A new div wraps the first line of filters */}
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          <input
+            type="text"
+            placeholder="Search by title..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            // 1. Added py-2 px-3 for more height and text padding
+            className="block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3"
+          />
           <select
             id="status-filter"
             value={status}
             onChange={(e) => handleStatusChange(e.target.value)}
-            style={{ padding: "8px" }}
+            // 1. Added py-2 px-3 to make the status dropdown bigger
+            className="block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3"
           >
             {STATUSES.map((s) => (
               <option key={s} value={s}>
@@ -278,76 +269,83 @@ function JobsList() {
             ))}
           </select>
         </div>
-      </div>
-      {/* Add this new block for tag filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: "5px",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-        }}
-      >
-        <p style={{ margin: 0 }}>Filter by tag:</p>
-        {allTags.map((t) => (
-          <button
-            key={t}
-            onClick={() => handleTagChange(t)}
-            style={{ background: tag === t ? "#cce5ff" : "#f0f0f0" }}
-          >
-            {t}
-          </button>
-        ))}
+
+        {/* The tag filters will now naturally fall onto the next line */}
+        <div className="w-full flex flex-wrap gap-2 pt-2 border-t border-gray-200">
+          {allTags.map((t) => (
+            <button
+              key={t}
+              onClick={() => handleTagChange(t)}
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                tag === t
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
       {/* Filter UI End */}
 
-      {/* Check the length of 'filteredJobs' for the empty message */}
-      {filteredJobs.length === 0 ? (
-        <div>No jobs found.</div>
+      {/* Job Cards List & Pagination */}
+      {isLoading ? (
+        Array.from({ length: 5 }).map((_, index) => (
+          <JobCardSkeleton key={index} />
+        ))
+      ) : isError ? (
+        <div>Error: {error.message}</div>
+      ) : filteredJobs.length === 0 ? (
+        <div className="text-center p-8 bg-white rounded-lg shadow-sm">
+          No jobs found.
+        </div>
       ) : (
-        <DndContext /* ... */>
-          <SortableContext
-            // The items for SortableContext should be from 'filteredJobs'
-            items={filteredJobs.map((j) => j.id)}
-            strategy={verticalListSortingStrategy}
+        <>
+          <DndContext /* ... */>
+            <SortableContext
+              items={filteredJobs.map((j) => j.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {filteredJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onEdit={() => handleOpenEditModal(job)}
+                  onToggleStatus={() => toggleJobStatusMutation.mutate(job)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+          {/* --- Add Pagination Controls --- */}
+          <div
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
-            {/* Map over 'filteredJobs' to render the cards */}
-            {filteredJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                onEdit={() => handleOpenEditModal(job)}
-                onToggleStatus={() => toggleJobStatusMutation.mutate(job)}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
+            >
+              Previous
+            </button>
+            <span style={{ margin: "0 15px" }}>
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
 
-      {/* --- Add Pagination Controls --- */}
-      <div
-        style={{
-          marginTop: "20px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <button onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
-          Previous
-        </button>
-        <span style={{ margin: "0 15px" }}>
-          Page {page} of {totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(page + 1)}
-          disabled={page >= totalPages}
-        >
-          Next
-        </button>
-      </div>
-
-      {/* 8. Render the Modal and JobForm */}
+      {/* Render the Modal and JobForm */}
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

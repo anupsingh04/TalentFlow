@@ -1,40 +1,9 @@
-/* src/features/jobs/JobCard.module.css */
-.card {
-  border: 1px solid #ccc;
-  padding: 16px;
-  margin: 8px 0;
-  border-radius: 8px;
-}
-
-.tags {
-  margin-top: 8px;
-}
-
-.tag {
-  background: #eee;
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin-right: 4px;
-  font-size: 12px;
-}
-
-.jobTitleLink {
-  text-decoration: none;
-  color: inherit;
-  transition: color 0.2s ease-in-out;
-}
-
-.jobTitleLink:hover {
-  color: #007bff;
-}
-
-.dragHandle {
-  display: inline-block;
-  cursor: grab;
-  padding: 8px;
-  color: #888;
-}
-
-.dragHandle:active {
-  cursor: grabbing;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

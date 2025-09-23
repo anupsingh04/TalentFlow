@@ -12,17 +12,19 @@ function CandidateCard({ candidate, style }) {
     .join("");
 
   return (
-    // Wrap the card in a Link component and apply the positioning style to it
+    // The positioning style from the virtualizer is applied to the Link
     <Link
       to={`/candidates/${candidate.id}`}
-      className={styles.cardLink}
       style={style}
+      className="block no-underline text-current"
     >
-      <div className={styles.card}>
-        <div className={styles.avatar}>{initials}</div>
-        <div className={styles.info}>
-          <p className={styles.name}>{candidate.name}</p>
-          <p className={styles.email}>{candidate.email}</p>
+      <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border-b border-gray-200">
+        <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xl flex-shrink-0">
+          {initials}
+        </div>
+        <div className="flex flex-col">
+          <p className="font-semibold text-gray-800">{candidate.name}</p>
+          <p className="text-gray-500 text-sm">{candidate.email}</p>
         </div>
       </div>
     </Link>
