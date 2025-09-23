@@ -52,53 +52,83 @@ function JobDetailPage() {
   }
 
   return (
-    <div>
-      <Link to="/jobs">&larr; Back to Jobs Board</Link>
-      <h1>{job.title}</h1>
-      <p>
-        <strong>Status:</strong> {job.status}
-      </p>
-      <p>
-        <strong>Description:</strong> {job.description}
-      </p>
-      <div>
-        <strong>Tags:</strong>
-        {job.tags.map((tag) => (
-          <span
-            key={tag}
-            style={{
-              background: "#eee",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              marginRight: "4px",
-            }}
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-      {/* Updated section with both links */}
-      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-        <Link to={`/jobs/${jobId}/assessment`}>
-          <button>Edit Assessment (HR)</button>
-        </Link>
-        <Link to={`/assessment/${jobId}`}>
-          <button>Take Assessment (Candidate)</button>
+    <div className="p-4 md:p-8">
+      <div className="mb-4">
+        <Link to="/jobs" className="text-blue-600 hover:underline">
+          &larr; Back to Jobs Board
         </Link>
       </div>
-      <hr />
-      <h2>Candidates for this Job</h2>
-      {isLoadingCandidates ? (
-        <p>Loading candidates...</p>
-      ) : (
-        <ul>
-          {candidates?.map((c) => (
-            <li key={c.id}>
-              <Link to={`/candidates/${c.id}`}>{c.name}</Link> ({c.stage})
-            </li>
+
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between md:items-start gap-4 mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">{job.title}</h1>
+            <p className="mt-1 text-sm text-gray-500">Status: {job.status}</p>
+          </div>
+          {/* Action Buttons */}
+          <div className="flex gap-2 flex-shrink-0">
+            <Link to={`/jobs/${jobId}/assessment`}>
+              <button className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                Edit Assessment (HR)
+              </button>
+            </Link>
+            <Link to={`/assessment/${jobId}`}>
+              <button className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
+                Take Assessment (Candidate)
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div className="flex gap-2 flex-wrap mb-6">
+          {job.tags.map((tag) => (
+            <span
+              key={tag}
+              className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+            >
+              {tag}
+            </span>
           ))}
-        </ul>
-      )}
+        </div>
+
+        {/* Description */}
+        <div className="prose max-w-none">
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            Description
+          </h2>
+          <p>{job.description}</p>
+        </div>
+
+        <hr className="my-6" />
+
+        {/* Candidate List */}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+            Candidates for this Job
+          </h2>
+          {isLoadingCandidates ? (
+            <p>Loading candidates...</p>
+          ) : (
+            <ul className="divide-y divide-gray-200">
+              {candidates?.map((c) => (
+                <li key={c.id} className="py-3">
+                  <Link
+                    to={`/candidates/${c.id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {c.name}
+                  </Link>
+                  <span className="ml-4 text-sm text-gray-500">
+                    ({c.stage})
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

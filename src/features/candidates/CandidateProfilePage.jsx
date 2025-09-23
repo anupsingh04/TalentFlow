@@ -124,86 +124,96 @@ function CandidateProfilePage() {
   const isLoading = isLoadingCandidate || isLoadingTimeline || isLoadingNotes;
 
   return (
-    <div>
-      <Link to="/candidates">&larr; Back to Candidate List</Link>
+    <div className="p-4 md:p-8">
+      <div className="mb-4">
+        <Link to="/candidates" className="text-blue-600 hover:underline">
+          &larr; Back to Candidate List
+        </Link>
+      </div>
+
       {isLoading ? (
         <div>Loading profile...</div>
       ) : candidate ? (
-        <div>
-          <h1 style={{ marginTop: "20px" }}>{candidate.name}</h1>
-          <p>Email: {candidate.email}</p>
-          <p>Current Stage: {candidate.stage}</p>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h1 className="text-3xl font-bold text-gray-800">{candidate.name}</h1>
+          <p className="mt-1 text-sm text-gray-500">Email: {candidate.email}</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Current Stage:{" "}
+            <span className="font-semibold capitalize">{candidate.stage}</span>
+          </p>
 
-          <hr />
+          <hr className="my-6" />
 
-          {/* Add the "Add Note" form */}
-          <h2>Notes</h2>
-          <form onSubmit={handleAddNote}>
-            {/* 2. Replace the textarea with the MentionsInput component */}
-            <MentionsInput
-              value={noteContent}
-              onChange={(e) => setNoteContent(e.target.value)}
-              placeholder="Add a note... use @ to mention a user."
-              style={{ width: "100%", minHeight: "80px" }}
-              disabled={addNoteMutation.isPending}
-            >
-              <Mention
-                trigger="@"
-                data={users}
-                // Explicitly define how the final text should be marked up.
-                // This stores both the display name and the ID.
-                markup="@[__display__](__id__)"
-                // Explicitly tell the component what to show in the input field.
-                displayTransform={(id, display) => `@${display}`}
-              />
-            </MentionsInput>
-
-            <button
-              type="submit"
-              disabled={addNoteMutation.isPending}
-              style={{ marginTop: "10px" }}
-            >
-              {addNoteMutation.isPending ? "Saving..." : "Save Note"}
-            </button>
-          </form>
-
-          {/* Display the list of notes */}
-          <div style={{ marginTop: "20px" }}>
-            {notes?.map((note) => (
-              <div
-                key={note.id}
-                style={{
-                  border: "1px solid #eee",
-                  padding: "10px",
-                  borderRadius: "4px",
-                  marginBottom: "10px",
-                }}
+          {/* Notes Section */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Notes</h2>
+            <form onSubmit={handleAddNote} className="flex flex-col gap-2">
+              <MentionsInput
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
+                placeholder="Add a note... use @ to mention a user."
+                className="mentions-input" // This class is for your global CSS
+                disabled={addNoteMutation.isPending}
               >
-                <NoteContent content={note.content} />
-                <small style={{ color: "#777" }}>
-                  Posted on {new Date(note.createdAt).toLocaleString()}
-                </small>
-              </div>
-            ))}
+                {/* This child component was missing */}
+                <Mention
+                  trigger="@"
+                  data={users}
+                  markup="@[__display__](__id__)"
+                  displayTransform={(id, display) => `@${display}`}
+                />
+              </MentionsInput>
+
+              <button
+                type="submit"
+                disabled={addNoteMutation.isPending}
+                className="self-start inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                {addNoteMutation.isPending ? "Saving..." : "Save Note"}
+              </button>
+            </form>
+
+            <div className="mt-6 space-y-4">
+              {notes?.map((note) => (
+                <div
+                  key={note.id}
+                  className="p-4 bg-gray-50 rounded-md border border-gray-200"
+                >
+                  <NoteContent content={note.content} />
+                  <small className="text-gray-500">
+                    Posted on {new Date(note.createdAt).toLocaleString()}
+                  </small>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <hr />
+          <hr className="my-6" />
 
-          <h2>Activity Timeline</h2>
-          {timeline?.length > 0 ? (
-            <ul style={{ listStyle: "none", padding: 0 }}>
-              {timeline.map((event) => (
-                <li
-                  key={event.id}
-                  style={{ borderBottom: "1px solid #eee", padding: "10px 0" }}
-                >
-                  <strong>{event.date}:</strong> {event.event}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No timeline events found.</p>
-          )}
+          {/* Timeline Section */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              Activity Timeline
+            </h2>
+            {timeline?.length > 0 ? (
+              <ul className="space-y-4">
+                {timeline.map((event) => (
+                  <li key={event.id} className="flex gap-4">
+                    <div className="text-right text-sm text-gray-500 w-32 flex-shrink-0">
+                      {new Date(event.date).toLocaleString()}
+                    </div>
+                    <div className="relative pl-4">
+                      <div className="absolute top-2 left-[-6.5px] h-3 w-3 bg-gray-300 rounded-full border-2 border-white"></div>
+                      <div className="absolute top-2 left-[-1px] h-full w-0.5 bg-gray-200"></div>
+                      <p className="relative">{event.event}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No timeline events found.</p>
+            )}
+          </div>
         </div>
       ) : (
         <h2>Candidate not found.</h2>

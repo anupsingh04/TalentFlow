@@ -13,7 +13,7 @@ dialog::backdrop {
 }
 
 /* Styles for react-mentions */
-/* .mentions {
+.mentions {
   margin: 0;
 }
 
@@ -50,4 +50,4 @@ dialog::backdrop {
   50% {
     opacity: 0.5;
   }
-} */
+}

@@ -78,54 +78,44 @@ function CandidateList() {
   ];
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2>Candidates</h2>
-        <div>
-          {/* Add Create Candidate button */}
+    <div className="p-4 md:p-8">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+        <h2 className="text-3xl font-bold text-gray-800">Candidates</h2>
+        <div className="flex gap-4">
           <button
             onClick={() => setIsModalOpen(true)}
-            style={{ marginRight: "10px" }}
+            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Add New Candidate
+            Create Candidate
           </button>
-          <Link to="/candidates/kanban">View Kanban Board</Link>
+          <Link
+            to="/candidates/kanban"
+            className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+          >
+            View Kanban Board
+          </Link>
         </div>
       </div>
 
-      {/* Filter and Search UI */}
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          marginBottom: "20px",
-          alignItems: "center",
-        }}
-        className={styles.filterContainer}
-      >
+      {/* Filter Controls */}
+      <div className="p-4 bg-white rounded-lg shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-center">
         <input
           type="text"
           placeholder="Search by name or email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: "250px", padding: "8px" }}
+          className="block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3"
         />
-        <div>
-          {/* Use a label for better accessibility */}
-          <label htmlFor="stage-filter" style={{ marginRight: "5px" }}>
+        <div className="w-full md:w-auto">
+          <label htmlFor="stage-filter" className="sr-only">
             Filter by stage:
           </label>
           <select
             id="stage-filter"
             onChange={(e) => handleStageChange(e.target.value)}
             value={stage}
-            style={{ padding: "8px" }}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3"
           >
             {STAGES.map((s) => (
               <option key={s} value={s}>
@@ -136,23 +126,17 @@ function CandidateList() {
         </div>
       </div>
 
-      {/* Handle Loading, Error, and Empty states before rendering the list */}
+      {/* Candidate List Container */}
       {isLoading ? (
-        <div>Loading candidates...</div>
+        <div>Loading candidates...</div> // Skeletons could be added here later
       ) : isError ? (
-        <div>Error loading candidates. Please try again.</div>
-      ) : filteredCandidates.length === 0 ? (
-        <div>No candidates found.</div>
+        <div className="text-center p-8 bg-white rounded-lg shadow-sm text-red-600">
+          Error loading candidates. Please try again.
+        </div>
       ) : (
-        /* The Scrolling Container - only rendered when there is data */
         <div
           ref={parentRef}
-          style={{
-            height: `600px`,
-            width: `100%`,
-            overflow: "auto",
-            border: "1px solid #ccc",
-          }}
+          className="w-full h-[600px] overflow-auto" // Using Tailwind for height and overflow
         >
           <div
             style={{
@@ -161,29 +145,33 @@ function CandidateList() {
               position: "relative",
             }}
           >
-            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-              const candidate = filteredCandidates[virtualItem.index];
-              const style = {
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: `${virtualItem.size}px`,
-                transform: `translateY(${virtualItem.start}px)`,
-              };
-              return (
-                <CandidateCard
-                  key={virtualItem.key}
-                  candidate={candidate}
-                  style={style}
-                />
-              );
-            })}
+            {filteredCandidates.length === 0 ? (
+              <div className="text-center p-8">No candidates found.</div>
+            ) : (
+              rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                const candidate = filteredCandidates[virtualItem.index];
+                const style = {
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: `${virtualItem.size}px`,
+                  transform: `translateY(${virtualItem.start}px)`,
+                };
+                return (
+                  <CandidateCard
+                    key={virtualItem.key}
+                    candidate={candidate}
+                    style={style}
+                  />
+                );
+              })
+            )}
           </div>
         </div>
       )}
 
-      {/* Add the Modal */}
+      {/* Modal for creating a candidate */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
