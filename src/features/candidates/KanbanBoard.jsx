@@ -7,6 +7,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import KanbanCard from "./KanbanCard";
+import toast from "react-hot-toast";
 
 const fetchAllCandidates = async () => {
   const response = await fetch("/candidates");
@@ -95,6 +96,12 @@ function KanbanBoard() {
     onError: (err, variables, context) => {
       // Roll back the cache on error
       queryClient.setQueryData(queryKey, context.previousCandidates);
+      // Add a toast to inform the user of the failure and rollback
+      toast.error("Failed to update stage. Reverting change.");
+    },
+    onSuccess: () => {
+      // Add a success toast
+      toast.success("Candidate stage updated!");
     },
     onSettled: () => {
       // Always refetch to sync with the server

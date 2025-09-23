@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MentionsInput, Mention } from "react-mentions";
+import toast from "react-hot-toast";
 
 // This is our local list of users for @mention suggestions
 const users = [
@@ -106,6 +107,10 @@ function CandidateProfilePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes", candidateId] });
       setNoteContent(""); // Clear the textarea
+      toast.success("Note added successfully!");
+    },
+    onError: () => {
+      toast.error("Error: Could not save note.");
     },
   });
 

@@ -4,6 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import PropTypes from "prop-types";
+import toast from "react-hot-toast";
 
 // Validation schema
 const schema = yup
@@ -42,9 +43,14 @@ function CandidateForm({ onSuccess }) {
     mutationFn: saveCandidate,
     onSuccess: () => {
       // Invalidate both candidate queries to refetch the list and the kanban board
+      toast.success("Candidate created successfully!");
       queryClient.invalidateQueries({ queryKey: ["candidates"] });
       queryClient.invalidateQueries({ queryKey: ["allCandidates"] });
       onSuccess(); // Close the modal
+    },
+    onError: (error) => {
+      // Error toast for creating a candidate
+      toast.error(`Error: ${error.message}`);
     },
   });
 

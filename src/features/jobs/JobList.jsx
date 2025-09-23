@@ -11,6 +11,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import JobCardSkeleton from "./JobCardSkeleton";
+import toast from "react-hot-toast";
 
 // This is the function that will fetch our data
 const fetchJobs = async ({ queryKey }) => {
@@ -85,6 +86,7 @@ function JobsList() {
       }
     },
     onSuccess: () => {
+      toast.success("Job status changed Successfully!");
       //Refetch the jobs list to see the change
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
     },

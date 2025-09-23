@@ -37,7 +37,7 @@ function JobCard({ job, onEdit, onToggleStatus }) {
           </h3>
         </div>
         <div>
-          {/* Add the new button */}
+          {/* Add archive/unarchive button */}
           <button onClick={onToggleStatus} style={{ marginRight: "10px" }}>
             {job.status === "active" ? "Archive" : "Unarchive"}
           </button>
