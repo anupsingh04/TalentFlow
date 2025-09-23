@@ -317,5 +317,24 @@ export const handlers = [
     return HttpResponse.json({ success: true });
   }),
 
+  // Handles POST /assessments/:jobId/submit
+  http.post("/assessments/:jobId/submit", async ({ request, params }) => {
+    const { jobId } = params;
+    const submissionData = await request.json();
+
+    // In a real app, you'd save this to the database.
+    // For this project, we'll just log it to simulate local persistence.
+    console.log(`[MSW] Received submission for Job #${jobId}:`, submissionData);
+    localStorage.setItem(
+      `assessment_submission_${jobId}`,
+      JSON.stringify(submissionData)
+    );
+
+    return HttpResponse.json({
+      success: true,
+      message: "Submission received.",
+    });
+  }),
+
   // <----- ASSESSMENT HANDLERS END  ----->
 ];

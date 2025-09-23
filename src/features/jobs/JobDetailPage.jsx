@@ -64,10 +64,13 @@ function JobDetailPage() {
           </span>
         ))}
       </div>
-      {/* Add a link to the assessment builder */}
-      <div style={{ marginTop: "20px" }}>
+      {/* Updated section with both links */}
+      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
         <Link to={`/jobs/${jobId}/assessment`}>
-          <button>Edit Assessment</button>
+          <button>Edit Assessment (HR)</button>
+        </Link>
+        <Link to={`/assessment/${jobId}`}>
+          <button>Take Assessment (Candidate)</button>
         </Link>
       </div>
     </div>

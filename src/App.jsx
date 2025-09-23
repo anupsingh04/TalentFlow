@@ -6,6 +6,7 @@ import CandidateList from "./features/candidates/CandidateList";
 import CandidateProfilePage from "./features/candidates/CandidateProfilePage";
 import KanbanBoard from "./features/candidates/KanbanBoard";
 import AssessmentBuilder from "./features/assessments/AssessmentBuilder";
+import AssessmentRuntime from "./features/assessments/AssessmentRuntime";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/jobs" element={<JobsList />} />
         <Route path="/jobs/:jobId" element={<JobDetailPage />} />
         <Route path="/jobs/:jobId/assessment" element={<AssessmentBuilder />} />
+        <Route path="/assessment/:jobId" element={<AssessmentRuntime />} />
         <Route path="/candidates" element={<CandidateList />} />
         <Route
           path="/candidates/:candidateId"
