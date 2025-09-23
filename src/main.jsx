@@ -12,9 +12,10 @@ const queryClient = new QueryClient();
 //this function starts the mock service worker
 async function enableMocking() {
   //we want to enable mocking only in development
-  if (process.env.NODE_ENV !== "development") {
-    return;
-  }
+  //REMOVED: The check for the development environment.
+  // if (process.env.NODE_ENV !== "development") {
+  //   return;
+  // }
   // Seed the database before starting the worker
   await seedInitialData();
   const { worker } = await import("./mocks/browser");
