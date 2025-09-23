@@ -10,19 +10,18 @@ function KanbanCard({ candidate }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    padding: "12px",
-    backgroundColor: "white",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-    cursor: "grab",
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <strong>{candidate.name}</strong>
-      <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#555" }}>
-        {candidate.email}
-      </p>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="bg-white p-3 rounded-md shadow-sm border border-gray-200 cursor-grab"
+    >
+      <p className="font-semibold text-sm text-gray-800">{candidate.name}</p>
+      <p className="text-xs text-gray-500">{candidate.email}</p>
     </div>
   );
 }

@@ -19,33 +19,21 @@ const STAGES = ["applied", "screen", "tech", "offer", "hired", "rejected"];
 
 function KanbanColumn({ stage, candidates }) {
   return (
-    <div
-      style={{
-        flex: "0 0 300px",
-        backgroundColor: "#f4f5f7",
-        borderRadius: "8px",
-        padding: "8px",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <h3 style={{ padding: "0 8px", textTransform: "capitalize" }}>
-        {stage} ({candidates.length})
+    // Column Styling
+    <div className="flex-shrink-0 w-80 bg-gray-100 rounded-xl p-2 flex flex-col">
+      <h3 className="font-semibold text-gray-700 px-2 py-1 capitalize">
+        {stage}
+        <span className="ml-2 text-sm font-normal text-gray-500">
+          {candidates.length}
+        </span>
       </h3>
       <SortableContext
         id={stage}
         items={candidates.map((c) => c.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            overflowY: "auto",
-            flexGrow: 1,
-          }}
-        >
+        {/* Container for the cards with scrolling */}
+        <div className="flex-grow min-h-0 overflow-y-auto p-1 space-y-2">
           {candidates.map((candidate) => (
             <KanbanCard key={candidate.id} candidate={candidate} />
           ))}
@@ -161,41 +149,25 @@ function KanbanBoard() {
   if (isError) return <div>Error loading candidates.</div>;
 
   return (
-    <div>
-      {/* Search Input remains the same */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "10px",
-        }}
-      >
-        <h2>Hiring Pipeline</h2>
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+        <h2 className="text-3xl font-bold text-gray-800">Hiring Pipeline</h2>
         <input
           type="text"
           placeholder="Search candidates..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ padding: "8px", width: "250px" }}
+          className="block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3"
         />
       </div>
 
-      {/* DndContext and JSX now render based on the memoized 'columns' */}
+      {/* Main board container */}
       <DndContext
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         collisionDetection={closestCenter}
       >
-        <div
-          style={{
-            display: "flex",
-            gap: "16px",
-            overflowX: "auto",
-            padding: "10px",
-            height: "calc(100vh - 150px)",
-          }}
-        >
+        <div className="flex gap-4 overflow-x-auto pb-4">
           {STAGES.map((stage) => (
             <KanbanColumn
               key={stage}
@@ -204,8 +176,14 @@ function KanbanBoard() {
             />
           ))}
         </div>
+
+        {/* This renders the card being dragged so it appears "lifted" above the columns */}
         <DragOverlay>
-          {activeCandidate ? <KanbanCard candidate={activeCandidate} /> : null}
+          {activeCandidate ? (
+            <div className="shadow-2xl rounded-md">
+              <KanbanCard candidate={activeCandidate} />
+            </div>
+          ) : null}
         </DragOverlay>
       </DndContext>
     </div>
