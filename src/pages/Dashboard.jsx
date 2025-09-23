@@ -82,6 +82,43 @@ function Dashboard() {
           </div>
         </Link>
       </div>
+
+      {/* NEW: Instructions Section */}
+      <div className="mt-12 p-6 bg-white rounded-lg shadow-md border border-gray-200">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4 font-light">
+          Instructions
+        </h2>
+        <ul className="list-disc list-inside space-y-2 text-gray-600 font-light">
+          <li>
+            Example assessments have been pre-created for the{" "}
+            <strong>Frontend Developer</strong>,{" "}
+            <strong>Backend Engineer</strong>, and{" "}
+            <strong>Junior Full Stack Developer</strong> jobs.
+          </li>
+          <li>
+            Click on any job title from the <strong>Jobs</strong> page to see
+            its details, including a list of all candidates who have applied.
+          </li>
+          <li>
+            From a job's detail page, you can either{" "}
+            <strong>Edit the Assessment</strong> (as HR) or{" "}
+            <strong>Take the Assessment</strong> (as a candidate).
+          </li>
+          <li>
+            You can view any candidate's profile by clicking their name on the{" "}
+            <strong>Candidates</strong> list or from a job detail page.
+          </li>
+          <li>
+            The candidate profile page features a{" "}
+            <strong>dynamic timeline</strong> that automatically records events
+            like stage changes from the Kanban board and any notes you add.
+          </li>
+          <li>
+            To see this in action, sample timeline events have been pre-loaded
+            for candidates with IDs #1 through #5.
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }

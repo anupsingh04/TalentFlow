@@ -32,6 +32,7 @@ const STAGES = ["applied", "screen", "tech", "offer", "hired", "rejected"];
 
 export async function seedInitialData() {
   try {
+    // --- Seed Jobs ---
     const jobCount = await db.jobs.count();
     const jobs = await db.jobs.toArray(); // Get all jobs to assign to candidates
     if (jobCount === 0) {
@@ -40,31 +41,186 @@ export async function seedInitialData() {
       console.log("Database seeded with 25 initial jobs.");
     }
 
-    // --- Seed Candidates (new code) ---
+    // --- Seed Candidates  ---
     const candidateCount = await db.candidates.count();
-    if (candidateCount > 0) {
-      return; // Database already seeded
+    if (candidateCount === 0) {
+      console.log("Seeding 1,000 candidates...");
+      const candidates = [];
+      for (let i = 0; i < 1000; i++) {
+        const firstName =
+          FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+        const lastName =
+          LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+        candidates.push({
+          name: `${firstName} ${lastName} #${i + 1}`,
+          email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${
+            i + 1
+          }@example.com`,
+          stage: STAGES[Math.floor(Math.random() * STAGES.length)],
+          jobId: jobs[Math.floor(Math.random() * jobs.length)].id, // Assign a random jobId
+        });
+      }
+
+      await db.candidates.bulkAdd(candidates);
+      console.log("Database seeded with 1,000 initial candidates.");
     }
 
-    console.log("Seeding 1,000 candidates...");
-    const candidates = [];
-    for (let i = 0; i < 1000; i++) {
-      const firstName =
-        FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-      const lastName =
-        LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
-      candidates.push({
-        name: `${firstName} ${lastName} #${i + 1}`,
-        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${
-          i + 1
-        }@example.com`,
-        stage: STAGES[Math.floor(Math.random() * STAGES.length)],
-        jobId: jobs[Math.floor(Math.random() * jobs.length)].id, // Assign a random jobId
-      });
+    // --- NEW: Seed example timeline events for the first 5 candidates ---
+    const eventCount = await db.timelineEvents.count();
+    if (eventCount === 0) {
+      console.log("Seeding example timeline events...");
+      await db.timelineEvents.bulkAdd([
+        // Candidate 1
+        {
+          candidateId: 1,
+          timestamp: new Date("2025-09-20T10:00:00Z").toISOString(),
+          eventText: "Applied for Frontend Developer.",
+        },
+        {
+          candidateId: 1,
+          timestamp: new Date("2025-09-21T11:00:00Z").toISOString(),
+          eventText: "Moved from 'applied' to 'screen' stage.",
+        },
+        // Candidate 2
+        {
+          candidateId: 2,
+          timestamp: new Date("2025-09-19T14:30:00Z").toISOString(),
+          eventText: "Applied for Backend Engineer (Node.js).",
+        },
+        // Candidate 3
+        {
+          candidateId: 3,
+          timestamp: new Date("2025-09-18T09:00:00Z").toISOString(),
+          eventText: "Applied for Junior Full Stack Developer.",
+        },
+        {
+          candidateId: 3,
+          timestamp: new Date("2025-09-20T16:00:00Z").toISOString(),
+          eventText: "Moved from 'applied' to 'screen' stage.",
+        },
+        {
+          candidateId: 3,
+          timestamp: new Date("2025-09-22T13:20:00Z").toISOString(),
+          eventText: "Moved from 'screen' to 'tech' stage.",
+        },
+        // Candidate 4
+        {
+          candidateId: 4,
+          timestamp: new Date("2025-09-21T18:00:00Z").toISOString(),
+          eventText: "Applied for Frontend Developer.",
+        },
+        // Candidate 5
+        {
+          candidateId: 5,
+          timestamp: new Date("2025-09-22T11:45:00Z").toISOString(),
+          eventText: "Applied for Backend Engineer (Node.js).",
+        },
+        {
+          candidateId: 5,
+          timestamp: new Date("2025-09-23T10:00:00Z").toISOString(),
+          eventText: "Moved from 'applied' to 'rejected' stage.",
+        },
+      ]);
     }
 
-    await db.candidates.bulkAdd(candidates);
-    console.log("Database seeded with 1,000 initial candidates.");
+    // --- NEW: Seed pre-built assessments ---
+    const assessmentCount = await db.assessments.count();
+    if (assessmentCount === 0) {
+      console.log("Seeding pre-built assessments...");
+      await db.assessments.bulkAdd([
+        // Assessment for Frontend Developer (jobId: 1)
+        {
+          jobId: 1,
+          sections: [
+            {
+              id: 1,
+              title: "React Fundamentals",
+              questions: [
+                {
+                  id: "q1",
+                  type: "single-choice",
+                  text: "What is JSX?",
+                  options: [
+                    { id: "o1", text: "A JavaScript syntax extension" },
+                    { id: "o2", text: "A CSS preprocessor" },
+                    { id: "o3", text: "A database query language" },
+                  ],
+                },
+                {
+                  id: "q2",
+                  type: "multi-choice",
+                  text: "Which of the following are React hooks?",
+                  options: [
+                    { id: "o4", text: "useState" },
+                    { id: "o5", text: "useEffect" },
+                    { id: "o6", text: "useQuery" },
+                  ],
+                },
+                {
+                  id: "q3",
+                  type: "short text",
+                  text: "In one sentence, what is the purpose of a React component?",
+                },
+              ],
+            },
+          ],
+        },
+        // Assessment for Backend Engineer (jobId: 2)
+        {
+          jobId: 2,
+          sections: [
+            {
+              id: 2,
+              title: "API & Database Concepts",
+              questions: [
+                {
+                  id: "q4",
+                  type: "single-choice",
+                  text: "Which HTTP method is typically used to create a new resource?",
+                  options: [
+                    { id: "o7", text: "GET" },
+                    { id: "o8", text: "POST" },
+                    { id: "o9", text: "DELETE" },
+                  ],
+                },
+                {
+                  id: "q5",
+                  type: "short text",
+                  text: "What is the purpose of a database index?",
+                },
+              ],
+            },
+          ],
+        },
+        // Assessment for Full Stack Developer (jobId: 3)
+        {
+          jobId: 3,
+          sections: [
+            {
+              id: 3,
+              title: "Full Stack Knowledge",
+              questions: [
+                {
+                  id: "q6",
+                  type: "long text",
+                  text: "Describe the request/response cycle in a typical web application.",
+                },
+                {
+                  id: "q7",
+                  type: "single-choice",
+                  text: "What does CORS stand for?",
+                  options: [
+                    { id: "o10", text: "Cross-Origin Resource Sharing" },
+                    { id: "o11", text: "Cascading Origin Style Sheets" },
+                    { id: "o12", text: "Central Origin Request Service" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    }
   } catch (error) {
     console.error("Error seeding database:", error);
   }

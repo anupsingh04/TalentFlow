@@ -15,7 +15,7 @@ export const handlers = [
   // <----- JOB HANDLERS START  ----->
   //Handles a GET /jobs request
   http.get("/jobs", async ({ request }) => {
-    // --- ADD THIS DELAY ---
+    // --- ADD DELAY ---
     // This will pause execution for 0.2s - 1.2s to simulate a network request
     await new Promise((res) => setTimeout(res, 200 + Math.random() * 1000));
     // --- END DELAY ---
@@ -74,7 +74,7 @@ export const handlers = [
 
   //Handles POST /jobs request (Create job)
   http.post("/jobs", async ({ request }) => {
-    // --- ADD THIS DELAY ---
+    // --- ADD DELAY ---
     // This will pause execution for 0.2s - 1.2s to simulate a network request
     await new Promise((res) => setTimeout(res, 200 + Math.random() * 1000));
     // --- END DELAY ---
@@ -191,6 +191,11 @@ export const handlers = [
   // <----- CANDIDATE HANDLERS START  ----->
   // Handles GET /candidates request
   http.get("/candidates", async ({ request }) => {
+    // --- ADD DELAY ---
+    // This will pause execution for 0.2s - 1.2s to simulate a network request
+    await new Promise((res) => setTimeout(res, 200 + Math.random() * 1000));
+    // --- END DELAY ---
+
     const url = new URL(request.url);
     const stage = url.searchParams.get("stage");
     const search = url.searchParams.get("search");

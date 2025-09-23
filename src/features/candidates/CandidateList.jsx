@@ -146,7 +146,10 @@ function CandidateList() {
             }}
           >
             {filteredCandidates.length === 0 ? (
-              <div className="text-center p-8">No candidates found.</div>
+              <div className="text-center p-8">
+                No candidates found. Please refresh the page to load Mock
+                candidates.
+              </div>
             ) : (
               rowVirtualizer.getVirtualItems().map((virtualItem) => {
                 const candidate = filteredCandidates[virtualItem.index];
