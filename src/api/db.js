@@ -46,3 +46,12 @@ db.version(7).stores({
   notes: "++id, candidateId",
   assessments: "&jobId", // '&' makes jobId a unique primary key
 });
+
+// Version 8 Schema - Adds jobId to candidates and a new timelineEvents table
+db.version(8).stores({
+  jobs: "++id, slug, order, status, *tags, description",
+  candidates: "++id, email, stage, jobId", // Add jobId and make it an index
+  notes: "++id, candidateId",
+  assessments: "&jobId",
+  timelineEvents: "++id, candidateId", // New table for events
+});

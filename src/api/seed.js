@@ -33,6 +33,7 @@ const STAGES = ["applied", "screen", "tech", "offer", "hired", "rejected"];
 export async function seedInitialData() {
   try {
     const jobCount = await db.jobs.count();
+    const jobs = await db.jobs.toArray(); // Get all jobs to assign to candidates
     if (jobCount === 0) {
       // Expanded list of 25 jobs with descriptions
       await db.jobs.bulkAdd(jobSeedData);
@@ -58,6 +59,7 @@ export async function seedInitialData() {
           i + 1
         }@example.com`,
         stage: STAGES[Math.floor(Math.random() * STAGES.length)],
+        jobId: jobs[Math.floor(Math.random() * jobs.length)].id, // Assign a random jobId
       });
     }
 

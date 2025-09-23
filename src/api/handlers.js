@@ -158,6 +158,13 @@ export const handlers = [
       );
     }
   }),
+
+  // Handles GET /jobs/:jobId/candidates
+  http.get("/jobs/:jobId/candidates", async ({ params }) => {
+    const jobId = Number(params.jobId);
+    const candidates = await db.candidates.where({ jobId }).toArray();
+    return HttpResponse.json(candidates);
+  }),
   // <----- JOB HANDLERS END  ----->
 
   // <----- CANDIDATE HANDLERS START  ----->
@@ -202,27 +209,27 @@ export const handlers = [
 
   // Handles GET /candidates/:id/timeline (Fetch candidate activity)
   http.get("/candidates/:id/timeline", async ({ params }) => {
-    // In a real app, this data would come from the database.
-    // Here, we'll just mock a static timeline for demonstration.
-    const timelineEvents = [
-      {
-        id: 1,
-        date: "2025-09-18",
-        event: "Applied for Senior Frontend Developer.",
-      },
-      { id: 2, date: "2025-09-19", event: "Moved to Screen stage by HR." },
-      {
-        id: 3,
-        date: "2025-09-21",
-        event: "Note added: 'Strong portfolio with React projects.'",
-      },
-      { id: 4, date: "2025-09-22", event: "Moved to Tech stage." },
-    ];
+    const candidateId = Number(params.id);
+    // Fetch real timeline events from the database for this candidate
+    const events = await db.timelineEvents.where({ candidateId }).toArray();
 
-    // Simulate a short delay
-    await new Promise((res) => setTimeout(res, 300));
+    // You can also add notes to the timeline for a richer history
+    const notes = await db.notes.where({ candidateId }).toArray();
 
-    return HttpResponse.json(timelineEvents);
+    const combinedTimeline = [
+      ...events.map((e) => ({
+        id: `evt-${e.id}`,
+        date: e.timestamp,
+        event: e.eventText,
+      })),
+      ...notes.map((n) => ({
+        id: `note-${n.id}`,
+        date: n.createdAt,
+        event: `Note added: "${n.content}"`,
+      })),
+    ].sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort newest first
+
+    return HttpResponse.json(combinedTimeline);
   }),
 
   // Handles POST /candidates (Create new candidate)
@@ -247,10 +254,10 @@ export const handlers = [
 
   // Handles PATCH /candidates/:id (for updating stage)
   http.patch("/candidates/:id", async ({ request, params }) => {
-    const { id } = params;
-    const { stage } = await request.json(); // Expecting { stage: "new-stage" }
+    const id = Number(params.id);
+    const { stage: newStage } = await request.json();
 
-    if (!stage) {
+    if (!newStage) {
       return new HttpResponse(
         JSON.stringify({ message: "Stage is required" }),
         { status: 400 }
@@ -258,8 +265,20 @@ export const handlers = [
     }
 
     try {
-      await db.candidates.update(Number(id), { stage });
-      const updatedCandidate = await db.candidates.get(Number(id));
+      // Get the candidate's current state before updating
+      const oldCandidate = await db.candidates.get(id);
+
+      // Update the candidate's stage
+      await db.candidates.update(id, { stage: newStage });
+
+      // Create a new timeline event for the stage change
+      await db.timelineEvents.add({
+        candidateId: id,
+        timestamp: new Date().toISOString(),
+        eventText: `Moved from '${oldCandidate.stage}' to '${newStage}' stage.`,
+      });
+
+      const updatedCandidate = await db.candidates.get(id);
       return HttpResponse.json(updatedCandidate);
     } catch (error) {
       return new HttpResponse(

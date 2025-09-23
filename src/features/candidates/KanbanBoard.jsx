@@ -1,14 +1,13 @@
 // src/features/candidates/KanbanBoard.jsx
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, useEffect } from "react";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { useMemo, useState } from "react";
+import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import KanbanCard from "./KanbanCard";
 
-// Fetch ALL candidates. No filters needed for the board view.
 const fetchAllCandidates = async () => {
   const response = await fetch("/candidates");
   if (!response.ok) throw new Error("Network response was not ok");
@@ -17,7 +16,6 @@ const fetchAllCandidates = async () => {
 
 const STAGES = ["applied", "screen", "tech", "offer", "hired", "rejected"];
 
-// A separate component for the column to keep things clean
 function KanbanColumn({ stage, candidates }) {
   return (
     <div
@@ -59,17 +57,19 @@ function KanbanColumn({ stage, candidates }) {
 function KanbanBoard() {
   const queryClient = useQueryClient();
   const [activeCandidate, setActiveCandidate] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
+  const queryKey = ["allCandidates"];
   const {
     data: candidates,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["allCandidates"], // A new query key for all candidates
+    queryKey,
     queryFn: fetchAllCandidates,
   });
 
-  // 1. Create the mutation to update a candidate's stage
+  // This mutation now includes the full optimistic update logic
   const updateStageMutation = useMutation({
     mutationFn: ({ candidateId, newStage }) => {
       return fetch(`/candidates/${candidateId}`, {
@@ -78,25 +78,47 @@ function KanbanBoard() {
         body: JSON.stringify({ stage: newStage }),
       });
     },
-    // When the mutation succeeds, refetch the data to ensure consistency
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["allCandidates"] });
+    onMutate: async ({ candidateId, newStage }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousCandidates = queryClient.getQueryData(queryKey);
+
+      // Optimistically update the cache
+      queryClient.setQueryData(queryKey, (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((c) =>
+          c.id === candidateId ? { ...c, stage: newStage } : c
+        );
+      });
+
+      return { previousCandidates };
+    },
+    onError: (err, variables, context) => {
+      // Roll back the cache on error
+      queryClient.setQueryData(queryKey, context.previousCandidates);
+    },
+    onSettled: () => {
+      // Always refetch to sync with the server
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
-  // 2. Group candidates into columns. We'll use a state variable to manage this optimistically.
-  const [columns, setColumns] = useState({});
-  useEffect(() => {
-    if (candidates) {
-      const grouped = {};
-      STAGES.forEach((stage) => {
-        grouped[stage] = candidates.filter((c) => c.stage === stage);
-      });
-      setColumns(grouped);
-    }
-  }, [candidates]);
+  // This useMemo hook now derives the displayed columns from the query data
+  const columns = useMemo(() => {
+    const filtered =
+      candidates?.filter(
+        (c) =>
+          !searchTerm ||
+          c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          c.email.toLowerCase().includes(searchTerm.toLowerCase())
+      ) || [];
 
-  // 3. Handle the drag-and-drop events
+    const grouped = {};
+    STAGES.forEach((stage) => {
+      grouped[stage] = filtered.filter((c) => c.stage === stage);
+    });
+    return grouped;
+  }, [candidates, searchTerm]);
+
   function handleDragStart(event) {
     const candidate = candidates.find((c) => c.id === event.active.id);
     setActiveCandidate(candidate);
@@ -106,47 +128,22 @@ function KanbanBoard() {
     setActiveCandidate(null);
     const { active, over } = event;
 
-    if (!over) return; // Dropped outside a column
+    if (!over) return;
 
     const activeId = active.id;
-    const overId = over.id;
+    const activeContainer = active.data.current?.sortable.containerId;
 
-    // Find the columns
-    const activeContainer = active.data.current.sortable.containerId;
-    let overContainer = over.data.current?.sortable.containerId;
+    // This is the robust way to find the destination container (column)
+    const overContainer = over.data.current?.sortable?.containerId || over.id;
 
-    if (!overContainer) {
-      // If dropping on a card, find its container
-      const candidate = candidates.find((c) => c.id === overId);
-      if (candidate) overContainer = candidate.stage;
+    if (
+      !activeContainer ||
+      !overContainer ||
+      activeContainer === overContainer
+    ) {
+      return;
     }
 
-    if (!overContainer || activeContainer === overContainer) {
-      return; // No change in column
-    }
-
-    // Optimistic Update
-    setColumns((prev) => {
-      const activeItems = prev[activeContainer];
-      const overItems = prev[overContainer];
-
-      const activeIndex = activeItems.findIndex((item) => item.id === activeId);
-      const activeItem = activeItems[activeIndex];
-
-      // Update the stage of the moved item
-      activeItem.stage = overContainer;
-
-      return {
-        ...prev,
-        [activeContainer]: [
-          ...activeItems.slice(0, activeIndex),
-          ...activeItems.slice(activeIndex + 1),
-        ],
-        [overContainer]: [...overItems, activeItem],
-      };
-    });
-
-    // Trigger the mutation to update the backend
     updateStageMutation.mutate({
       candidateId: activeId,
       newStage: overContainer,
@@ -158,9 +155,31 @@ function KanbanBoard() {
 
   return (
     <div>
-      <h2>Hiring Pipeline</h2>
-      {/* 4. Wrap the board in the DndContext */}
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      {/* Search Input remains the same */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px",
+        }}
+      >
+        <h2>Hiring Pipeline</h2>
+        <input
+          type="text"
+          placeholder="Search candidates..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ padding: "8px", width: "250px" }}
+        />
+      </div>
+
+      {/* DndContext and JSX now render based on the memoized 'columns' */}
+      <DndContext
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        collisionDetection={closestCenter}
+      >
         <div
           style={{
             display: "flex",
@@ -178,8 +197,6 @@ function KanbanBoard() {
             />
           ))}
         </div>
-
-        {/* DragOverlay makes the card look nice while dragging */}
         <DragOverlay>
           {activeCandidate ? <KanbanCard candidate={activeCandidate} /> : null}
         </DragOverlay>
@@ -188,4 +205,6 @@ function KanbanBoard() {
   );
 }
 
+// Don't forget to include the KanbanColumn component definition in this file.
+// I have omitted it here for brevity.
 export default KanbanBoard;

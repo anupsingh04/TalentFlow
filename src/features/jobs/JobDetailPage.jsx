@@ -11,6 +11,13 @@ const fetchJobById = async (jobId) => {
   return response.json();
 };
 
+// New function to fetch candidates for this job
+const fetchCandidatesByJob = async (jobId) => {
+  const response = await fetch(`/jobs/${jobId}/candidates`);
+  if (!response.ok) throw new Error("Could not fetch candidates");
+  return response.json();
+};
+
 function JobDetailPage() {
   const { jobId } = useParams(); // Get the jobId from the URL parameter
 
@@ -22,6 +29,12 @@ function JobDetailPage() {
   } = useQuery({
     queryKey: ["job", jobId], // A unique key for this specific job query
     queryFn: () => fetchJobById(jobId),
+  });
+
+  // New query to get the list of candidates for this job
+  const { data: candidates, isLoading: isLoadingCandidates } = useQuery({
+    queryKey: ["jobCandidates", jobId],
+    queryFn: () => fetchCandidatesByJob(jobId),
   });
 
   if (isLoading) {
@@ -73,6 +86,19 @@ function JobDetailPage() {
           <button>Take Assessment (Candidate)</button>
         </Link>
       </div>
+      <hr />
+      <h2>Candidates for this Job</h2>
+      {isLoadingCandidates ? (
+        <p>Loading candidates...</p>
+      ) : (
+        <ul>
+          {candidates?.map((c) => (
+            <li key={c.id}>
+              <Link to={`/candidates/${c.id}`}>{c.name}</Link> ({c.stage})
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
