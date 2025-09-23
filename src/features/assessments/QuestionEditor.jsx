@@ -16,25 +16,14 @@ function QuestionEditor({ sectionId, question }) {
   );
 
   return (
-    <div
-      style={{
-        border: "1px dashed #ddd",
-        padding: "12px",
-        marginTop: "12px",
-        borderRadius: "4px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <label style={{ fontWeight: "bold" }}>Question:</label>
+    <div className="bg-gray-50 border border-gray-200 p-4 mt-4 rounded-lg">
+      <div className="flex justify-between items-center mb-2">
+        <label className="text-sm font-semibold text-gray-700 capitalize">
+          {question.type} Question
+        </label>
         <button
           onClick={() => removeQuestion(sectionId, question.id)}
-          style={{ color: "red" }}
+          className="text-sm text-red-600 hover:text-red-800 font-semibold"
         >
           Remove
         </button>
@@ -44,24 +33,15 @@ function QuestionEditor({ sectionId, question }) {
         onChange={(e) =>
           updateQuestionText(sectionId, question.id, e.target.value)
         }
-        placeholder={`Enter text for ${question.type} question...`}
-        style={{ width: "100%", minHeight: "60px", marginTop: "8px" }}
+        placeholder="Enter question text..."
+        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
       />
 
-      {/* 2. Conditionally render the options UI */}
       {isChoiceBased && (
-        <div style={{ marginTop: "10px" }}>
-          <label style={{ fontWeight: "bold" }}>Options:</label>
+        <div className="mt-4 pl-2 border-l-2 border-gray-200">
+          <label className="text-sm font-medium text-gray-600">Options:</label>
           {question.options.map((option, index) => (
-            <div
-              key={option.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginTop: "4px",
-              }}
-            >
+            <div key={option.id} className="flex items-center gap-2 mt-2">
               <input
                 type="text"
                 value={option.text}
@@ -74,10 +54,11 @@ function QuestionEditor({ sectionId, question }) {
                   )
                 }
                 placeholder={`Option ${index + 1}`}
-                style={{ width: "100%" }}
+                className="flex-grow rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
               <button
                 onClick={() => removeOption(sectionId, question.id, option.id)}
+                className="text-gray-500 hover:text-red-600 text-lg font-bold"
               >
                 &times;
               </button>
@@ -85,9 +66,9 @@ function QuestionEditor({ sectionId, question }) {
           ))}
           <button
             onClick={() => addOption(sectionId, question.id)}
-            style={{ marginTop: "8px" }}
+            className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-semibold"
           >
-            Add Option
+            + Add Option
           </button>
         </div>
       )}

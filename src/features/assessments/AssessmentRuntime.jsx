@@ -63,78 +63,121 @@ function AssessmentRuntime() {
   }
 
   return (
-    <div>
-      <h2>Assessment for Job #{jobId}</h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {assessment.sections.map((section) => (
-          <div key={section.id} style={{ marginBottom: "20px" }}>
-            {/* STYLING: Use h4 for section titles to match preview */}
-            <h4>{section.title}</h4>
-            {section.questions.map((question) => {
-              const questionId = String(question.id); // Ensure ID is a string for RHF
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+      {isLoading ? (
+        <div className="text-center">Loading assessment...</div>
+      ) : !assessment || assessment.sections.length === 0 ? (
+        <div className="text-center p-8 bg-white rounded-lg shadow-sm">
+          This job does not have an assessment.
+        </div>
+      ) : (
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+              Assessment for Job #{jobId}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Please complete all the required fields.
+            </p>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              {assessment.sections.map((section) => (
+                <div key={section.id} className="mb-8">
+                  <h3 className="text-xl font-semibold text-gray-700 pb-2 mb-4 border-b border-gray-200">
+                    {section.title}
+                  </h3>
+                  <div className="space-y-6">
+                    {section.questions.map((question) => {
+                      const questionId = String(question.id);
+                      return (
+                        <div key={questionId}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {question.text}
+                          </label>
 
-              return (
-                // STYLING: Add bottom margin to each question for spacing
-                <div key={questionId} style={{ marginBottom: "15px" }}>
-                  {/* STYLING: Make label a block element with margin */}
-                  <label style={{ display: "block", marginBottom: "5px" }}>
-                    {question.text}
-                  </label>
+                          {question.type === "short text" && (
+                            <input
+                              {...register(questionId, { required: true })}
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            />
+                          )}
+                          {question.type === "long text" && (
+                            <textarea
+                              {...register(questionId, { required: true })}
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              rows={4}
+                            />
+                          )}
+                          {question.type === "single-choice" && (
+                            <div className="space-y-2 mt-2">
+                              {question.options.map((opt) => (
+                                <div key={opt.id} className="flex items-center">
+                                  <input
+                                    id={`${questionId}-${opt.id}`}
+                                    {...register(questionId, {
+                                      required: true,
+                                    })}
+                                    type="radio"
+                                    value={opt.text}
+                                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                  <label
+                                    htmlFor={`${questionId}-${opt.id}`}
+                                    className="ml-3 block text-sm text-gray-700"
+                                  >
+                                    {opt.text}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {question.type === "multi-choice" && (
+                            <div className="space-y-2 mt-2">
+                              {question.options.map((opt) => (
+                                <div key={opt.id} className="flex items-center">
+                                  <input
+                                    id={`${questionId}-${opt.id}`}
+                                    {...register(`${questionId}.${opt.id}`)}
+                                    type="checkbox"
+                                    value={opt.text}
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                  <label
+                                    htmlFor={`${questionId}-${opt.id}`}
+                                    className="ml-3 block text-sm text-gray-700"
+                                  >
+                                    {opt.text}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
 
-                  {question.type === "short text" && (
-                    <input
-                      {...register(questionId, { required: true })}
-                      style={{ width: "100%" }}
-                    />
-                  )}
-                  {question.type === "long text" && (
-                    <textarea
-                      {...register(questionId, { required: true })}
-                      style={{ width: "100%" }}
-                    />
-                  )}
-                  {question.type === "single-choice" && (
-                    <div>
-                      {question.options.map((opt) => (
-                        <div key={opt.id}>
-                          <input
-                            {...register(questionId, { required: true })}
-                            type="radio"
-                            value={opt.text}
-                          />{" "}
-                          {opt.text}
+                          {errors[questionId] && (
+                            <p className="mt-1 text-sm text-red-600">
+                              This field is required
+                            </p>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* ADDED: Rendering logic for 'multi-choice' questions (checkboxes) */}
-                  {question.type === "multi-choice" && (
-                    <div>
-                      {question.options.map((opt) => (
-                        <div key={opt.id}>
-                          <input
-                            {...register(`${questionId}.${opt.id}`)} // Use unique names for checkboxes
-                            type="checkbox"
-                            value={opt.text}
-                          />{" "}
-                          {opt.text}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {errors[questionId] && (
-                    <p style={{ color: "red" }}>This field is required</p>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={submissionMutation.isPending}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
+                >
+                  {submissionMutation.isPending
+                    ? "Submitting..."
+                    : "Submit Assessment"}
+                </button>
+              </div>
+            </form>
           </div>
-        ))}
-        <button type="submit" disabled={submissionMutation.isPending}>
-          {submissionMutation.isPending ? "Submitting..." : "Submit Assessment"}
-        </button>
-      </form>
+        </div>
+      )}
     </div>
   );
 }

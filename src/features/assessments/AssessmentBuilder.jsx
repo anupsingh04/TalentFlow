@@ -76,50 +76,34 @@ function AssessmentBuilder() {
   if (isLoading) return <div>Loading assessment builder...</div>;
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2>Assessment Builder for Job #{jobId}</h2>
-        {/* Add the Save button */}
-        <button onClick={handleSave} disabled={saveMutation.isPending}>
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+        <h2 className="text-3xl font-bold text-gray-800">Assessment Builder</h2>
+        <button
+          onClick={handleSave}
+          disabled={saveMutation.isPending}
+          className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:bg-gray-400"
+        >
           {saveMutation.isPending ? "Saving..." : "Save Assessment"}
         </button>
       </div>
 
-      {/* New two-column layout */}
-      <div
-        style={{ display: "flex", gap: "20px", marginTop: "20px" }}
-        className={styles.builderLayout}
-      >
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Left Column: The Builder */}
-        <div style={{ flex: 1 }}>
+        <div className="flex-grow lg:w-3/5">
           {sections.map((section) => (
             <div
               key={section.id}
-              style={{
-                border: "1px solid #ccc",
-                padding: "16px",
-                margin: "16px 0",
-              }}
+              className="bg-white p-4 rounded-lg shadow-md mb-6"
             >
               <input
                 type="text"
                 value={section.title}
                 onChange={(e) => updateSectionTitle(section.id, e.target.value)}
-                style={{
-                  fontSize: "1.5em",
-                  border: "none",
-                  width: "100%",
-                  marginBottom: "10px",
-                }}
+                placeholder="Section Title"
+                className="text-2xl font-bold text-gray-800 border-none p-2 w-full focus:ring-2 focus:ring-indigo-200 rounded-md"
               />
 
-              {/* 3. Render questions for this section */}
               {section.questions.map((question) => (
                 <QuestionEditor
                   key={question.id}
@@ -128,14 +112,15 @@ function AssessmentBuilder() {
                 />
               ))}
 
-              {/* 4. Add controls to add new questions */}
-              <div style={{ marginTop: "20px" }}>
-                <span>Add Question:</span>
+              <div className="mt-4 pt-4 border-t flex flex-wrap gap-2">
+                <span className="text-sm font-medium text-gray-700 self-center">
+                  Add Question:
+                </span>
                 {QUESTION_TYPES.map((type) => (
                   <button
                     key={type}
                     onClick={() => addQuestion(section.id, type)}
-                    style={{ marginLeft: "10px" }}
+                    className="px-3 py-1 border border-gray-300 rounded-full text-sm text-gray-700 hover:bg-gray-100 capitalize"
                   >
                     {type}
                   </button>
@@ -143,19 +128,19 @@ function AssessmentBuilder() {
               </div>
             </div>
           ))}
-          <button onClick={addSection}>Add Section</button>
+          <button
+            onClick={addSection}
+            className="w-full text-center py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 hover:border-gray-400"
+          >
+            + Add New Section
+          </button>
         </div>
 
         {/* Right Column: The Live Preview */}
-        <div
-          style={{
-            flex: 1,
-            position: "sticky",
-            top: "20px",
-            alignSelf: "flex-start",
-          }}
-        >
-          <AssessmentPreview />
+        <div className="lg:w-2/5">
+          <div className="sticky top-8">
+            <AssessmentPreview />
+          </div>
         </div>
       </div>
     </div>
