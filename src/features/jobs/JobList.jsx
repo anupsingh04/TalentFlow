@@ -12,6 +12,7 @@ import {
 } from "@dnd-kit/sortable";
 import JobCardSkeleton from "./JobCardSkeleton";
 import toast from "react-hot-toast";
+import styles from "./JobList.module.css";
 
 // This is the function that will fetch our data
 const fetchJobs = async ({ queryKey }) => {
@@ -250,6 +251,7 @@ function JobsList() {
           marginBottom: "20px",
           alignItems: "center",
         }}
+        className={styles.filterContainer}
       >
         <input
           type="text"

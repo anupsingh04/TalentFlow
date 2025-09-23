@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAssessmentStore } from "../../stores/assessmentStore";
 import QuestionEditor from "./QuestionEditor";
 import AssessmentPreview from "./AssessmentPreview";
+import styles from "./Assessment.module.css";
 
 // Fetch function
 const fetchAssessment = async (jobId) => {
@@ -91,7 +92,10 @@ function AssessmentBuilder() {
       </div>
 
       {/* New two-column layout */}
-      <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
+      <div
+        style={{ display: "flex", gap: "20px", marginTop: "20px" }}
+        className={styles.builderLayout}
+      >
         {/* Left Column: The Builder */}
         <div style={{ flex: 1 }}>
           {sections.map((section) => (

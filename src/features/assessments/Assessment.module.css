@@ -1,0 +1,10 @@
+.builderLayout {
+  display: flex;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .builderLayout {
+    flex-direction: column; /* Stack the builder and preview */
+  }
+}

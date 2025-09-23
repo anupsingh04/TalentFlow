@@ -107,6 +107,7 @@ function CandidateList() {
           marginBottom: "20px",
           alignItems: "center",
         }}
+        className={styles.filterContainer}
       >
         <input
           type="text"
