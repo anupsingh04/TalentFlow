@@ -295,7 +295,7 @@ function JobsList() {
           <JobCardSkeleton key={index} />
         ))
       ) : isError ? (
-        <div>Error: {error.message}</div>
+        <div>Error: {error.message}. Refresh the page to Load mock jobs!</div>
       ) : filteredJobs.length === 0 ? (
         <div className="text-center p-8 bg-white rounded-lg shadow-sm">
           No jobs found.
@@ -318,26 +318,22 @@ function JobsList() {
             </SortableContext>
           </DndContext>
           {/* --- Add Pagination Controls --- */}
-          <div
-            style={{
-              marginTop: "20px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
+          {/* --- Styled Pagination Controls --- */}
+          <div className="flex justify-center items-center gap-4 my-8">
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page <= 1}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
-            <span style={{ margin: "0 15px" }}>
+            <span className="text-sm text-gray-700">
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page >= totalPages}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>

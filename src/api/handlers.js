@@ -36,30 +36,25 @@ export const handlers = [
       jobsCollection = jobsCollection.where("status").equals(status);
     }
 
-    // Use the new, efficient multi-entry index for tag filtering
-    if (tag) {
-      jobsCollection = jobsCollection.where("tags").equals(tag);
-    }
+    // First, get the results from the initial query
+    let partlyFilteredJobs = await jobsCollection.toArray();
 
-    // 1. Fetch the filtered data from Dexie WITHOUT sorting it yet.
-    let filteredJobs = await jobsCollection.toArray();
+    // Now, apply the second filter (for tags) using JavaScript's .filter()
+    let fullyFilteredJobs = tag
+      ? partlyFilteredJobs.filter((job) => job.tags.includes(tag))
+      : partlyFilteredJobs;
 
-    // 2. NOW, sort the resulting array in JavaScript by the 'order' property.
-    filteredJobs.sort((a, b) => a.order - b.order);
+    // The rest of the logic remains the same, but operates on the correctly filtered array
+    fullyFilteredJobs.sort((a, b) => a.order - b.order);
 
-    //Apply search filter if it exists
-    if (search) {
-      filteredJobs = filteredJobs.filter((job) =>
-        job.title.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    const finalFilteredJobs = search
+      ? fullyFilteredJobs.filter((job) =>
+          job.title.toLowerCase().includes(search.toLowerCase())
+        )
+      : fullyFilteredJobs;
 
-    // --- Start of updated response logic ---
-    // Get the total count *before* slicing for pagination
-    const totalCount = filteredJobs.length;
-
-    // Apply pagination to the filtered array
-    const paginatedJobs = filteredJobs.slice(
+    const totalCount = finalFilteredJobs.length;
+    const paginatedJobs = finalFilteredJobs.slice(
       (page - 1) * pageSize,
       page * pageSize
     );
