@@ -100,5 +100,5 @@ This project follows a feature-sliced architecture where UI components, hooks, a
 
 - The application is front-end only. All data is stored in the browser and will be lost if the browser's application data is cleared.
 - The `@mention` suggestion feature uses a simple, hardcoded list of users.
-- The timeline generation is based on stage changes but could be expanded to include other event types.
+- The timeline generation is based on notes and stage changes but could be expanded to include other event types.
 - Kanban Board State Conflict: A state management conflict currently exists between the client-side search filter and the optimistic UI updates for drag-and-drop. As a result, changing a candidate's stage via drag-and-drop does not persist correctly when the list of candidates is actively filtered. This functionality works as expected when no search filter is applied.

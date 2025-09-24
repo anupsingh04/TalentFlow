@@ -18,7 +18,8 @@ function CandidateCard({ candidate, style }) {
       style={style}
       className="block no-underline text-current group relative"
     >
-      <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border-b border-gray-200">
+      {/* Add border, border-transparent, and group-hover:border-blue-500 here */}
+      <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-transparent group-hover:border-blue-500 h-full">
         <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xl flex-shrink-0">
           {initials}
         </div>

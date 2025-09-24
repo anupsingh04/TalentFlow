@@ -126,6 +126,18 @@ function CandidateList() {
         </div>
       </div>
 
+      {/* NEW: Add the informational note here */}
+      <p className="text-center text-sm text-gray-500 mb-6">
+        Note: Go to the{" "}
+        <Link
+          to="/candidates/kanban"
+          className="text-blue-600 hover:underline font-medium"
+        >
+          Kanban Board
+        </Link>{" "}
+        to update the stages of the candidates.
+      </p>
+
       {/* Candidate List Container */}
       {isLoading ? (
         <div>Loading candidates...</div> // Skeletons could be added here later
